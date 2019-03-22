@@ -2,7 +2,7 @@ using AutoFixture;
 using GalacticWasteManagement.Utilities;
 using NUnit.Framework;
 
-namespace GalacticWasteManagement.Tests
+namespace GalacticWasteManagement.Tests.Utilities
 {
     public class HashingTests
     {

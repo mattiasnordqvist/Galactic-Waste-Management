@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace GalacticWasteManagement.Utilities
 {
-        public static class Hashing
+    public static class Hashing
     {
         public static string CreateHash(string content)
         {

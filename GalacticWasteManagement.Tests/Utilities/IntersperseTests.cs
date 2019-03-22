@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using GalacticWasteManagement.Utilities;
 using NUnit.Framework;
 
-namespace GalacticWasteManagement.Tests
+namespace GalacticWasteManagement.Tests.Utilities
 {
     
     public class IntersperseTests
