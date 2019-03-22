@@ -5,7 +5,12 @@ VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalacticWasteManagement", "GalacticWasteManagement\GalacticWasteManagement.csproj", "{9161F75A-5110-477E-AB6F-61ACFFB390BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalacticWasteManagement.Tests", "GalacticWasteManagement.Tests\GalacticWasteManagement.Tests.csproj", "{241B7B81-AD0E-4BBA-A1A7-EC0ED9198AA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalacticWasteManagement.Tests", "GalacticWasteManagement.Tests\GalacticWasteManagement.Tests.csproj", "{241B7B81-AD0E-4BBA-A1A7-EC0ED9198AA1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EC89BBE2-EF20-4E79-9C87-8C0D9170393B}"
+	ProjectSection(SolutionItems) = preProject
+		ReadMe.md = ReadMe.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
