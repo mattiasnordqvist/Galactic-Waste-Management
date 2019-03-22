@@ -5,7 +5,7 @@ using GalacticWasteManagement.Utilities;
 using JellyDust;
 using JellyDust.Dapper;
 
-namespace GalacticWasteManagement.Scripts
+namespace GalacticWasteManagement.Scripts.ScriptProviders
 {
     public class EmbeddedScript : IScript
     {

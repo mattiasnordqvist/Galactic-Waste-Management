@@ -2,6 +2,7 @@
 
 namespace GalacticWasteManagement.Utilities
 {
+
     public static class IntersperseExtension
     {
         public static IEnumerable<T> Intersperse<T>(this IEnumerable<T> source, T element)

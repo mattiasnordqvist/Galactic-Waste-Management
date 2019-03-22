@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using GalacticWasteManagement.Utilities;
 
-namespace GalacticWasteManagement.Scripts
+namespace GalacticWasteManagement.Scripts.ScriptProviders
 {
     public class EmbeddedScriptProvider : IScriptProvider
     {
