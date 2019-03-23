@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GalacticWasteManagement.Logging;
+using GalacticWasteManagement.Scripts;
 using GalacticWasteManagement.Utilities;
 using JellyDust;
 using JellyDust.Dapper;
@@ -11,10 +13,47 @@ namespace GalacticWasteManagement
     public class GalacticWaste
     {
         private readonly IConnection _connection;
+        private readonly ILogger _logger;
+        private readonly Func<IScript, string> _getSchemaVersion;
 
-        public GalacticWaste(IConnection connection)
+        public GalacticWaste(IConnection connection, ILogger logger, Func<IScript, string> getSchemaVersion)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _logger = logger;
+            _getSchemaVersion = getSchemaVersion;
+        }
+
+        private async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, Dictionary<string, string> scriptVariables, string database, string version, string type, bool journal = true)
+        {
+            scriptVariables = scriptVariables ?? new Dictionary<string, string>();
+
+            _connection.DbConnection.ChangeDatabase(database);
+            var lastVersion = await GetLastSchemaVersionJournalEntry();
+            foreach (var script in scripts)
+            {
+                _logger.Log($"Executing script '{script.Name}'", "info");
+
+                await script.Apply(_connection, scriptVariables);
+                if (journal)
+                {
+                    var nextVersion = _getSchemaVersion(script);
+                    var nextSchemaJournalVersion = new SchemaVersionJournalEntry
+                    {
+                        Name = script.Name,
+                        Type = type,
+                        Applied = DateTime.Now,
+                        Version = nextVersion,
+                        Hashed = script.Hashed
+                    };
+
+                    await _connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], ScriptName, Applied, Hashed) values (@Version, @Type, @ScriptName, @Applied, @Hashed)", new
+                    {
+                        nextSchemaJournalVersion
+                    });
+                    lastVersion = nextSchemaJournalVersion;
+                }
+            }
+            return lastVersion;
 
         }
 
@@ -34,7 +73,7 @@ namespace GalacticWasteManagement
 
         public Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry()
         {
-            return _connection.QueryAsync<SchemaVersionJournalEntry>("SELECT TOP 1 * FROM SchemaVersion ORDER BY Id")
+            return _connection.QueryAsync<SchemaVersionJournalEntry>("SELECT TOP 1 * FROM SchemaVersionJournal ORDER BY Id")
                 .Then(x => Task.FromResult(x.FirstOrDefault()));
         }
 

@@ -7,13 +7,13 @@
   <ItemGroup>
     <None Remove="Scripts\Defaults\Create\CreateDatabase.sql" />
     <None Remove="Scripts\Defaults\Drop\DropSchema.sql" />
-    <None Remove="Scripts\Defaults\FirstRun\SchemaVersion.sql" />
+    <None Remove="Scripts\Defaults\FirstRun\SchemaVersionJournal.sql" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Defaults\Create\CreateDatabase.sql" />
     <EmbeddedResource Include="Scripts\Defaults\Drop\DropSchema.sql" />
-    <EmbeddedResource Include="Scripts\Defaults\FirstRun\SchemaVersion.sql" />
+    <EmbeddedResource Include="Scripts\Defaults\FirstRun\SchemaVersionJournal.sql" />
   </ItemGroup>
 
   <ItemGroup>
