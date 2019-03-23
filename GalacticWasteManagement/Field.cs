@@ -1,6 +1,5 @@
 ﻿namespace GalacticWasteManagement
 {
-
     public enum Field
     {
         GreenFieldDevelopment = 0,
