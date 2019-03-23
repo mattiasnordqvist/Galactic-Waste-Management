@@ -10,20 +10,25 @@ using JellyDust.Dapper;
 
 namespace GalacticWasteManagement
 {
-    public class GalacticWaste
+    public abstract class Galaxy
     {
         private readonly IConnection _connection;
         private readonly ILogger _logger;
         private readonly Func<IScript, string> _getSchemaVersion;
+        private readonly IScriptProvider _scriptProvider;
 
-        public GalacticWaste(IConnection connection, ILogger logger, Func<IScript, string> getSchemaVersion)
+        public bool AllowCleanSchema { get; private set; } = false;
+        public bool AllowDrop { get; private set; }
+
+        public Galaxy(IConnection connection, ILogger logger, Func<IScript, string> getSchemaVersion, IScriptProvider scriptProvider)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             _logger = logger;
             _getSchemaVersion = getSchemaVersion;
+            _scriptProvider = scriptProvider;
         }
 
-        private async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, Dictionary<string, string> scriptVariables, string database, string version, string type, bool journal = true)
+        private async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, Dictionary<string, string> scriptVariables, string database, string version, ScriptType? type, bool journal = true)
         {
             scriptVariables = scriptVariables ?? new Dictionary<string, string>();
 
@@ -40,7 +45,7 @@ namespace GalacticWasteManagement
                     var nextSchemaJournalVersion = new SchemaVersionJournalEntry
                     {
                         Name = script.Name,
-                        Type = type,
+                        Type = type.ToString(),
                         Applied = DateTime.Now,
                         Version = nextVersion,
                         Hashed = script.Hashed
@@ -90,6 +95,33 @@ namespace GalacticWasteManagement
             {
                 _connection.DbConnection.ChangeDatabase(currentDb);
             }
+        }
+
+        protected async Task CleanSchemaSafe(UpdateDatabaseConfig updateConfig)
+        {
+            if (!AllowCleanSchema)
+            {
+                _logger.Log($"Cleaning schema in current galaxy is prohibited!", "warning");
+            }
+            _logger.Log($"Cleaning '{updateConfig.DatabaseName}' database schema.", "important");
+            await DropSafe(updateConfig);
+            await FirstRun(updateConfig);
+        }
+
+        public Task DropSafe(UpdateDatabaseConfig updateConfig)
+        {
+            if (!AllowDrop)
+            {
+                _logger.Log($"Dropping schema in current galaxy is prohibited!", "warning");
+            }
+
+            _logger.Log($"Dropping '{updateConfig.DatabaseName}' database schema.", "important");
+            return RunScripts(_scriptProvider.GetScripts("Drop"), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
+        }
+
+        public Task FirstRun(UpdateDatabaseConfig updateConfig)
+        {
+            return RunScripts(_scriptProvider.GetScripts("FirstRun"), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
         }
     }
 }

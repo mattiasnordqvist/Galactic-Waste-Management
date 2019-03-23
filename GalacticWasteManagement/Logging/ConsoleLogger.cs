@@ -9,7 +9,7 @@ namespace GalacticWasteManagement.Logging
         ArtisticPainter painter = new ArtisticPainter();
         public ConsoleLogger(string databaseName)
         {
-            painter.BeCreativeWith(new ArtisticRegexBrush(databaseName, Color.AliceBlue));
+            painter.BeCreativeWith(new ArtisticRegexBrush(databaseName, Color.Orange));
         }
         public void Log(string message, string type)
         {
@@ -19,7 +19,9 @@ namespace GalacticWasteManagement.Logging
                     ? Color.Yellow
                     : type == "error"
                         ? Color.Red
-                        : Color.White;
+                        : type == "important"
+                        ? Color.White
+                        : Color.DimGray;
             Console.WriteLine(painter.Unleash(new ArtisticString(message, defaultColor)));
         }
     }

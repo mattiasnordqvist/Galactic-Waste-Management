@@ -38,7 +38,7 @@ namespace GalacticWasteManagement
 
         public void Update(UpdateDatabaseConfig updateDatabaseConfig)
         {
-            throw new NotImplementedException();
+            _logger.Log($"Managing galactic waste in {updateDatabaseConfig.DatabaseName}", "important");
         }
     }
 }
