@@ -17,7 +17,7 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
             _scriptsRootFolder = scriptsRootFolder;
         }
 
-        public IEnumerable<IScript> GetScripts(string type)
+        public IEnumerable<IScript> GetScripts(ScriptType type)
         {
             return EmbeddedResourceReader.GetResourcesFrom(_scriptsAssembly, x => x.StartsWith($"{_namespacePrefix}.{_scriptsRootFolder}.{type}"))
                 .Select(x => new EmbeddedScript(x, type)).ToList();

@@ -13,7 +13,7 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
         private string _cachedContent;
         private string _cachedHashedContent;
 
-        public EmbeddedScript(ResourceFile resourceFile, string type)
+        public EmbeddedScript(ResourceFile resourceFile, ScriptType type)
         {
             _resourceFile = resourceFile;
             Type = type;
@@ -46,7 +46,7 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
             }
         }
 
-        public string Type { get; private set; }
+        public ScriptType Type { get; private set; }
 
         public async Task Apply(IConnection connection, Dictionary<string, string> scriptVariables)
         {

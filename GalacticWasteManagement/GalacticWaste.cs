@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Scripts;
+using GalacticWasteManagement.Scripts.ScriptProviders;
 using GalacticWasteManagement.Utilities;
 using JellyDust;
 using JellyDust.Dapper;
@@ -19,13 +21,15 @@ namespace GalacticWasteManagement
 
         public bool AllowCleanSchema { get; private set; } = false;
         public bool AllowDrop { get; private set; }
+        public bool AllowCreate { get; private set; }
 
         public Galaxy(IConnection connection, ILogger logger, Func<IScript, string> getSchemaVersion, IScriptProvider scriptProvider)
         {
+            var defaultScriptProvider = new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(Galaxy)), "Scripts");
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             _logger = logger;
             _getSchemaVersion = getSchemaVersion;
-            _scriptProvider = scriptProvider;
+            _scriptProvider = new CompositeScriptProvider(defaultScriptProvider, scriptProvider);
         }
 
         private async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, Dictionary<string, string> scriptVariables, string database, string version, ScriptType? type, bool journal = true)
@@ -116,12 +120,23 @@ namespace GalacticWasteManagement
             }
 
             _logger.Log($"Dropping '{updateConfig.DatabaseName}' database schema.", "important");
-            return RunScripts(_scriptProvider.GetScripts("Drop"), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
+            return RunScripts(_scriptProvider.GetScripts(ScriptType.Drop), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
+        }
+
+        public Task CreateSafe(UpdateDatabaseConfig updateConfig)
+        {
+            if (!AllowCreate)
+            {
+                _logger.Log($"Creating database in current galaxy is prohibited!", "warning");
+            }
+
+            _logger.Log($"Create '{updateConfig.DatabaseName}' database.", "important");
+            return RunScripts(_scriptProvider.GetScripts(ScriptType.Create), updateConfig.ScriptVariables, "master", null, null, false);
         }
 
         public Task FirstRun(UpdateDatabaseConfig updateConfig)
         {
-            return RunScripts(_scriptProvider.GetScripts("FirstRun"), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
+            return RunScripts(_scriptProvider.GetScripts(ScriptType.FirstRun), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
         }
     }
 }

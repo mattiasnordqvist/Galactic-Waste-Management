@@ -4,6 +4,6 @@ namespace GalacticWasteManagement.Scripts
 {
     public interface IScriptProvider
     {
-        IEnumerable<IScript> GetScripts(string scriptType);
+        IEnumerable<IScript> GetScripts(ScriptType scriptType);
     }
 }
