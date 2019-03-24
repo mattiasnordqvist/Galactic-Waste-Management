@@ -112,7 +112,7 @@ namespace GalacticWasteManagement
             await FirstRun(updateConfig);
         }
 
-        public Task DropSafe(UpdateDatabaseConfig updateConfig)
+        protected Task DropSafe(UpdateDatabaseConfig updateConfig)
         {
             if (!AllowDrop)
             {
@@ -123,7 +123,7 @@ namespace GalacticWasteManagement
             return RunScripts(_scriptProvider.GetScripts(ScriptType.Drop), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
         }
 
-        public Task CreateSafe(UpdateDatabaseConfig updateConfig)
+        protected Task CreateSafe(UpdateDatabaseConfig updateConfig)
         {
             if (!AllowCreate)
             {
@@ -134,9 +134,19 @@ namespace GalacticWasteManagement
             return RunScripts(_scriptProvider.GetScripts(ScriptType.Create), updateConfig.ScriptVariables, "master", null, null, false);
         }
 
-        public Task FirstRun(UpdateDatabaseConfig updateConfig)
+        protected Task FirstRun(UpdateDatabaseConfig updateConfig)
         {
             return RunScripts(_scriptProvider.GetScripts(ScriptType.FirstRun), updateConfig.ScriptVariables, updateConfig.DatabaseName, null, null, false);
+        }
+
+        protected static SchemaComparison Compare(IEnumerable<IScript> scripts, IEnumerable<SchemaVersionJournalEntry> schema)
+        {
+            var all = scripts.ToList();
+            var @new = scripts.Where(x => !schema.Select(s => s.Name).Contains(x.Name)).ToList();
+            var changed = scripts.Join(schema, x => x.Name, x => x.Name, (x, y) => (x, y)).Where(x => x.x.Hashed != x.y.Hashed).ToList();//(s => schema.Any(n => n.Name == s.Name && n.Hashed != s.Hashed)).ToList();
+            var removed = schema.Where(s => !scripts.Any(n => n.Name == s.Name)).ToList();
+            var unchanged = scripts.Join(schema, x => (x.Name, x.Hashed), x => (x.Name, x.Hashed), (x, y) => (x, y)).ToList();
+            return new SchemaComparison { All = all, New = @new, Changed = changed, Removed = removed, Unchanged = unchanged };
         }
     }
 }
