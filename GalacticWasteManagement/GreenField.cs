@@ -17,7 +17,7 @@ namespace GalacticWasteManagement
             AllowDrop = true;
         }
 
-        public override async Task ManageWasteInField(IConnection connection, WasteManagerConfiguration configuration, IScriptProvider scriptProvider)
+        public override async Task ManageWasteInField(IConnection connection, ITransaction transaction, WasteManagerConfiguration configuration, IScriptProvider scriptProvider)
         {
             Connection = connection;
             ScriptProvider = scriptProvider;
@@ -45,6 +45,7 @@ namespace GalacticWasteManagement
             }
 
             Connection.DbConnection.ChangeDatabase(configuration.DatabaseName);
+            var triggeringTransaction = transaction.DbConnection;
             if (cleanRequested && !dbCreated)
             {
                 Logger.Log($"Cleaning database '{configuration.DatabaseName}' because parameter 'Clean' was set.", "info");

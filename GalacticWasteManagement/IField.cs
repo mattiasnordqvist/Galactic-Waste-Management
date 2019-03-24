@@ -6,6 +6,6 @@ namespace GalacticWasteManagement
 {
     public interface IField
     {
-        Task ManageWasteInField(IConnection connection, WasteManagerConfiguration configuration, IScriptProvider scriptProvider);
+        Task ManageWasteInField(IConnection connection, ITransaction transaction, WasteManagerConfiguration configuration, IScriptProvider scriptProvider);
     }
 }

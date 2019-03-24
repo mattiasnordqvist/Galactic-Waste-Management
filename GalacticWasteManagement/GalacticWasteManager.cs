@@ -25,10 +25,11 @@ namespace GalacticWasteManagement
             _output = output;
         }
 
-        private static IConnection OpenConnection(string connectionString, IOutput output = null)
+
+
+        public async Task Update(WasteManagerConfiguration configuration, IField field)
         {
-            
-            var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString)
+            var connectionStringBuilder = new SqlConnectionStringBuilder(_connectionString)
             {
                 InitialCatalog = "master"
                 // - But what if we can't connect to master?!
@@ -36,16 +37,14 @@ namespace GalacticWasteManagement
                 // - But what if we just handle stuff accordingly?!
             };
 
-            return new Connection(new ConnectionFactory(connectionStringBuilder.ConnectionString, output));
-        }
-
-        public async Task Update(WasteManagerConfiguration configuration, IField field)
-        {
             var defaultScriptProvider = new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(FieldBase)), "Scripts.Defaults");
             var scriptProvider = new CompositeScriptProvider(defaultScriptProvider, _scriptProvider);
-            _logger.Log($"Managing galactic waste in {configuration.DatabaseName}", "important");
-            await field.ManageWasteInField(OpenConnection(_connectionString), configuration, scriptProvider);
-            _logger.Log("Galactic waste has been managed!", "success");
+            using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(connectionStringBuilder.ConnectionString, _output)))
+            {
+                _logger.Log($"Managing galactic waste in {configuration.DatabaseName}", "important");
+                await field.ManageWasteInField(uow.Connection, uow.Transaction, configuration, scriptProvider);
+                _logger.Log("Galactic waste has been managed!", "success");
+            }
         }
     }
 }

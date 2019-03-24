@@ -158,6 +158,6 @@ namespace GalacticWasteManagement
             return ScriptProvider.GetScripts(scriptType);
         }
 
-        public abstract Task ManageWasteInField(IConnection connection, WasteManagerConfiguration configuration, IScriptProvider scriptProvider);
+        public abstract Task ManageWasteInField(IConnection connection, ITransaction transaction, WasteManagerConfiguration configuration, IScriptProvider scriptProvider);
     }
 }
