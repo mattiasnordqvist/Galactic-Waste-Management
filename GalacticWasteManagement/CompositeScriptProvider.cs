@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GalacticWasteManagement.Scripts;
-using GalacticWasteManagement.Scripts.ScriptProviders;
 
 namespace GalacticWasteManagement
 {

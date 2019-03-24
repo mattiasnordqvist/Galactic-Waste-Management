@@ -2,7 +2,7 @@
 
 namespace GalacticWasteManagement
 {
-    public class UpdateDatabaseConfig
+    public class WasteManagerConfiguration
     {
         private string _databaseName;
 
@@ -16,7 +16,6 @@ namespace GalacticWasteManagement
             }
         }
         public Dictionary<string, string> ScriptVariables { get; set; } = new Dictionary<string, string>();
-        public Field Field { get; set; }
         public bool Clean { get; set; }
 
         public bool CreateDatabaseIfNotExist { get; set; }

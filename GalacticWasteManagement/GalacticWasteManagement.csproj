@@ -18,8 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArtisticPastelPainter" Version="0.2.0" />
+    <PackageReference Include="ArtisticPastelPainter" Version="0.6.0" />
     <PackageReference Include="Dapper" Version="1.60.1" />
+    <PackageReference Include="Honestly" Version="3.0.0" />
     <PackageReference Include="JellyDust" Version="0.0.7" />
     <PackageReference Include="JellyDust.Dapper" Version="0.0.7" />
     <PackageReference Include="MiniProfiler.Shared" Version="4.0.165" />
