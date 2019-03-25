@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>7.3</LangVersion>
+    <Version>0.2</Version>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +25,7 @@
     <PackageReference Include="Dapper" Version="1.60.1" />
     <PackageReference Include="Honestly" Version="3.0.0" />
     <PackageReference Include="JellyDust" Version="0.0.8" />
-    <PackageReference Include="JellyDust.Dapper" Version="0.0.7" />
+    <PackageReference Include="JellyDust.Dapper" Version="0.0.8" />
     <PackageReference Include="MiniProfiler.Shared" Version="4.0.165" />
     <PackageReference Include="Pastel" Version="1.2.1" />
   </ItemGroup>

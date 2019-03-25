@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
-using GalacticWasteManagement.Scripts;
 using GalacticWasteManagement.Scripts.ScriptProviders;
 using JellyDust;
 
@@ -12,14 +11,14 @@ namespace GalacticWasteManagement
 {
     public class GalacticWasteManager : IGalacticWasteManager
     {
-        private readonly IScriptProvider _scriptProvider;
         private readonly string _connectionString;
         private readonly IOutput _output;
         private readonly ILogger _logger;
+        public IProjectSettings ProjectSettings { get; set; }
 
-        public GalacticWasteManager(IScriptProvider scriptProvider, string connectionString, ILogger logger, IOutput output = null)
+        public GalacticWasteManager(IProjectSettings projectSettings, string connectionString, ILogger logger, IOutput output = null)
         {
-            _scriptProvider = scriptProvider ?? throw new ArgumentNullException(nameof(scriptProvider));
+            ProjectSettings = projectSettings;
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _output = output;
@@ -27,7 +26,7 @@ namespace GalacticWasteManagement
 
 
 
-        public async Task Update(WasteManagerConfiguration configuration, IField field)
+        public async Task Update(WasteManagerConfiguration configuration)
         {
             var connectionStringBuilder = new SqlConnectionStringBuilder(_connectionString)
             {
@@ -37,13 +36,14 @@ namespace GalacticWasteManagement
                 // - But what if we just handle stuff accordingly?!
             };
 
-            var defaultScriptProvider = new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(FieldBase)), "Scripts.Defaults");
-            var scriptProvider = new CompositeScriptProvider(defaultScriptProvider, _scriptProvider);
+            var defaultScriptProvider = new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(MigrationBase)), "Scripts.Defaults");
+            ProjectSettings.ScriptProvider = new CompositeScriptProvider(defaultScriptProvider, ProjectSettings.ScriptProvider);
             using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(connectionStringBuilder.ConnectionString, _output)))
             {
                 _logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                 _logger.Log($"Managing galactic waste in {configuration.DatabaseName}", "important");
-                await field.ManageWasteInField(uow.Connection, uow.Transaction, configuration, scriptProvider);
+                var migration = configuration.GetMigration(ProjectSettings, _logger, uow.Connection, uow.Transaction);
+                await migration.ManageWasteInField(configuration);
                 uow.Commit();
                 _logger.Log("Galactic waste has been managed!", "success");
                 _output?.Dump();

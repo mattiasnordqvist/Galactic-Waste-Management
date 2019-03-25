@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using GalacticWasteManagement.Logging;
+using JellyDust;
 
 namespace GalacticWasteManagement
 {
-    public class WasteManagerConfiguration
+    public abstract class WasteManagerConfiguration
     {
         private string _databaseName;
 
@@ -16,8 +18,8 @@ namespace GalacticWasteManagement
             }
         }
         public Dictionary<string, string> ScriptVariables { get; set; } = new Dictionary<string, string>();
-        public bool Clean { get; set; }
+        public bool Clean { get; set; } = false;
 
-        public bool CreateDatabaseIfNotExist { get; set; }
+        public abstract IMigration GetMigration(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction);
     }
 }

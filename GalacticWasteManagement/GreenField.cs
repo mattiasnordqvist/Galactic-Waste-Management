@@ -9,19 +9,18 @@ using JellyDust;
 namespace GalacticWasteManagement
 {
 
-    public class GreenField : FieldBase
+    public class GreenField : MigrationBase
     {
-        public GreenField(ILogger logger) : base(logger, x => "vNext")
+
+        public GreenField(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
         {
             AllowCleanSchema = true;
             AllowCreate = true;
             AllowDrop = true;
         }
 
-        public override async Task ManageWasteInField(IConnection connection, ITransaction transaction, WasteManagerConfiguration configuration, IScriptProvider scriptProvider)
+        public override async Task ManageWasteInField(WasteManagerConfiguration configuration)
         {
-            Connection = connection;
-            ScriptProvider = scriptProvider;
             var cleanRequested = configuration.Clean;
             var hasCleaned = false;
             var isClean = Honestly.DontKnow;
@@ -46,7 +45,7 @@ namespace GalacticWasteManagement
             }
 
             Connection.DbConnection.ChangeDatabase(configuration.DatabaseName);
-            var triggeringTransaction = transaction.DbTransaction;
+            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
             if (cleanRequested && !dbCreated)
             {
                 Logger.Log($"Cleaning database '{configuration.DatabaseName}' because parameter 'Clean' was set.", "info");
@@ -95,7 +94,7 @@ namespace GalacticWasteManagement
             }
             else
             {
-                Logger.Log("No new or changed RunIfChanged migrations" ,"info");
+                Logger.Log("No new or changed RunIfChanged migrations", "info");
             }
 
             if (hasCleaned && comparisonSeed.All.Any())
@@ -114,7 +113,5 @@ namespace GalacticWasteManagement
                 Logger.Log("No new Seed scripts", "info");
             }
         }
-
-        
     }
 }

@@ -1,45 +1,40 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
-using GalacticWasteManagement.Scripts;
 using JellyDust;
 
 namespace GalacticWasteManagement
 {
-    public class LiveField : FieldBase
+    public class LiveField : MigrationBase
     {
-        public LiveField(ILogger logger, Func<string, string> getSchemaVersion) : base(logger, getSchemaVersion)
+        public LiveField(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
         {
             AllowCreate = true;
         }
 
-        public override async Task ManageWasteInField(IConnection connection, ITransaction transaction, WasteManagerConfiguration configuration, IScriptProvider scriptProvider)
+        public override async Task ManageWasteInField(WasteManagerConfiguration configuration)
         {
-            Connection = connection;
-            ScriptProvider = scriptProvider;
             var dbExists = await DbExist(configuration.DatabaseName);
             if (!dbExists)
             {
                 Logger.Log($"No '{configuration.DatabaseName}' database found. It will be created.", "warning");
                 await CreateSafe(configuration);
-                Logger.Log("Creating table for schema versioning.", "info");
                 await FirstRun(configuration);
             }
 
             Connection.DbConnection.ChangeDatabase(configuration.DatabaseName);
-
+            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
             // execute all scripts in Migrations in latest version.
-            var scripts = ScriptProvider.GetScripts(ScriptType.Migration);
+            var scripts = ProjectSettings.ScriptProvider.GetScripts(ScriptType.Migration);
             var schema = await GetSchema(null, ScriptType.Migration);
             // if any changed/removed/added on earlier versions, warn
             // all added on current version and onward should be new, run them
             var lastJournalEntry = await GetLastSchemaVersionJournalEntry();
-            string v = lastJournalEntry != null ? _getSchemaVersion(lastJournalEntry.Version) : null;
-            var olderScripts = scripts.Where(s => v != null && _getSchemaVersion(s.Name).CompareTo(v) <= 0);
-            var newerScripts = scripts.Where(s => v == null || _getSchemaVersion(s.Name).CompareTo(v) > 0);
-            var olderSchema = schema.Where(s => v != null && _getSchemaVersion(s.Name).CompareTo(v) <= 0);
-            var newerSchema = schema.Where(s => v == null || _getSchemaVersion(s.Name).CompareTo(v) > 0);
+            string v = lastJournalEntry != null ? lastJournalEntry.Version : null;
+            var olderScripts = scripts.Where(s => v != null && ProjectSettings.MigrationVersioning.DetermineVersion(s).CompareTo(v) <= 0);
+            var newerScripts = scripts.Where(s => v == null || ProjectSettings.MigrationVersioning.DetermineVersion(s).CompareTo(v) > 0);
+            var olderSchema = schema.Where(s => v != null && s.Version.CompareTo(v) <= 0);
+            var newerSchema = schema.Where(s => v == null || s.Version.CompareTo(v) > 0);
             var lastVersion = lastJournalEntry;
             var olderComparison = Compare(olderScripts, olderSchema);
             if (olderComparison.Removed.Any() || olderComparison.Changed.Any() || olderComparison.New.Any())
@@ -55,7 +50,7 @@ namespace GalacticWasteManagement
                 lastVersion = await RunScripts(scripts, configuration, null, ScriptType.Migration);
             }
 
-            if (ScriptProvider.GetScripts(ScriptType.vNext).Any())
+            if (ProjectSettings.ScriptProvider.GetScripts(ScriptType.vNext).Any())
             {
                 Logger.Log("Scripts found in vNext folder. No scripts should exist in vNext folder when doing Live Field migrations. Scripts will not be run.", "warning");
             }

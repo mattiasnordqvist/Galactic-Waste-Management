@@ -9,21 +9,26 @@ using JellyDust.Dapper;
 
 namespace GalacticWasteManagement
 {
-    public abstract class FieldBase : IField
+    public abstract class MigrationBase : IMigration
     {
-        internal IConnection Connection { get; set; }
-        protected readonly ILogger Logger;
-        protected readonly Func<string, string> _getSchemaVersion;
-        internal IScriptProvider ScriptProvider { get; set; }
+        protected IProjectSettings ProjectSettings { get; }
 
-        public bool AllowCleanSchema { get; protected set; } = false;
-        public bool AllowDrop { get; protected set; } = false;
-        public bool AllowCreate { get; protected set; } = false;
+        protected ILogger Logger { get; }
 
-        public FieldBase(ILogger logger, Func<string, string> getSchemaVersion)
+        protected IConnection Connection { get; }
+        protected ITransaction Transaction { get; }
+
+
+        protected bool AllowCleanSchema { get; set; } = false;
+        protected bool AllowDrop { get; set; } = false;
+        protected bool AllowCreate { get; set; } = false;
+
+        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction)
         {
             Logger = logger;
-            _getSchemaVersion = getSchemaVersion;
+            Connection = connection;
+            Transaction = transaction;
+            ProjectSettings = projectSettings;
 
         }
 
@@ -40,7 +45,7 @@ namespace GalacticWasteManagement
                 await script.Apply(Connection, scriptVariables);
                 if (journal)
                 {
-                    var nextVersion = version ?? _getSchemaVersion(script.Name);
+                    var nextVersion = version ?? ProjectSettings.MigrationVersioning.DetermineVersion(script);
                     var nextSchemaJournalVersion = new SchemaVersionJournalEntry
                     {
                         Name = script.Name,
@@ -111,7 +116,7 @@ namespace GalacticWasteManagement
             }
 
             Logger.Log($"Dropping '{updateConfig.DatabaseName}' database schema.", "important");
-            return RunScripts(ScriptProvider.GetScripts(ScriptType.Drop), updateConfig, null, null, false);
+            return RunScripts(ProjectSettings.ScriptProvider.GetScripts(ScriptType.Drop), updateConfig, null, null, false);
         }
 
         protected Task CreateSafe(WasteManagerConfiguration updateConfig)
@@ -122,12 +127,12 @@ namespace GalacticWasteManagement
             }
 
             Logger.Log($"Creating database '{updateConfig.DatabaseName}'.", "important");
-            return RunScripts(ScriptProvider.GetScripts(ScriptType.Create), updateConfig, null, null, false, "master");
+            return RunScripts(ProjectSettings.ScriptProvider.GetScripts(ScriptType.Create), updateConfig, null, null, false, "master");
         }
 
         protected Task FirstRun(WasteManagerConfiguration updateConfig)
         {
-            return RunScripts(ScriptProvider.GetScripts(ScriptType.FirstRun), updateConfig, null, null, false);
+            return RunScripts(ProjectSettings.ScriptProvider.GetScripts(ScriptType.FirstRun), updateConfig, null, null, false);
         }
 
         protected static SchemaComparison Compare(IEnumerable<IScript> scripts, IEnumerable<SchemaVersionJournalEntry> schema)
@@ -142,16 +147,16 @@ namespace GalacticWasteManagement
 
         protected async Task<SchemaComparison> Compare(string version, ScriptType type)
         {
-            var scripts = ScriptProvider.GetScripts(type);
+            var scripts = ProjectSettings.ScriptProvider.GetScripts(type);
             var schema = await GetSchema(version, type);
             return Compare(scripts, schema);
         }
 
         protected IEnumerable<IScript> GetScripts(ScriptType scriptType)
         {
-            return ScriptProvider.GetScripts(scriptType);
+            return ProjectSettings.ScriptProvider.GetScripts(scriptType);
         }
 
-        public abstract Task ManageWasteInField(IConnection connection, ITransaction transaction, WasteManagerConfiguration configuration, IScriptProvider scriptProvider);
+        public abstract Task ManageWasteInField(WasteManagerConfiguration configuration);
     }
 }

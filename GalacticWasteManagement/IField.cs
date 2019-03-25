@@ -1,11 +1,9 @@
 ﻿using System.Threading.Tasks;
-using GalacticWasteManagement.Scripts;
-using JellyDust;
 
 namespace GalacticWasteManagement
 {
-    public interface IField
+    public interface IMigration
     {
-        Task ManageWasteInField(IConnection connection, ITransaction transaction, WasteManagerConfiguration configuration, IScriptProvider scriptProvider);
+        Task ManageWasteInField(WasteManagerConfiguration configuration);
     }
 }
