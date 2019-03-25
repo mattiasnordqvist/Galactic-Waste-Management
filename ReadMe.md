@@ -1,4 +1,25 @@
+This package is supposed to replace FluentMigrator, DbUp or RoundhousE or whatever you're using. All of these frameworks made it hard for me in some way so I decided to roll my own. 
+
+#### Problems with FluentMigrator
+* I don't see the point in not writing sql in sql.
+* I don't understand how to update data when changing my schema
+* I don't see the point in down-scripts.
+* I don't see how you easily can track changes made to a specific stored procedure, view, trigger, function, whatever in your git repo.
+
+#### Problems with RoundhousE
+* I don't understand how to "install" it. 
+* But that doesn't matter because it doesn't say it works with any sql server above 2008 anyways.
+
+#### Problems with DbUp
+* Promising, but I want to journal my EVERYTIME-scripts as well. The fact that they have changed is important, and I need to see which changes were part of a release.
+* I found something called Improving.DbUp which kinda seemed promising as well, but it wasn't net core compatible and also a piece of junk, not letting me decide for myself where my connectionstrings are.
+* I tried to modify DbUp by creating my own implementations of scriptproviders and journalingstuff, and realized I'm changing so much stuff it didn't look like DbUp anymore and it was not even exactly as I'd like it anyway.
+
+Soooo, I felt that I'm done creating garbage migration scripts that are not working the way I want. Welcome to Galactic Waste Management.
+
 # Galactic Waste Management
+
+// some quickstart here
 
 Migrating database schema and content is done differently depending on mode.
 
