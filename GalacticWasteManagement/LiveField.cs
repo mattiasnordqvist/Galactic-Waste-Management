@@ -1,13 +1,14 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
+using GalacticWasteManagement.Output;
 using JellyDust;
 
 namespace GalacticWasteManagement
 {
     public class LiveFieldMigration : MigrationBase
     {
-        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
+        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction) : base(projectSettings, logger, output, connection, transaction)
         {
             AllowCreate = true;
         }

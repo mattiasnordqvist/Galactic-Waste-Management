@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using GalacticWasteManagement.Utilities;
 using StackExchange.Profiling;
@@ -17,10 +19,14 @@ namespace GalacticWasteManagement.Output
 
         public void Dump()
         {
-            var text = MiniProfiler.Root.CustomTimings?
-                .SelectMany(x => x.Value.Select(y => y.CommandString)
-                    .Intersperse("GO")
-                    .ToList());
+            var text = MiniProfiler.Root.Children
+                ?.SelectMany(x =>
+                 new List<string> { Environment.NewLine, $"-- {x.Name}" }
+                 .Union(
+                    x.CustomTimings.SelectMany(c =>
+                       c.Value.Select(y => y.CommandString)
+                       .Intersperse("GO"))
+                        .ToList()));
             if (text != null)
             {
                 File.WriteAllLines(_filePath, text);

@@ -50,11 +50,10 @@ namespace GalacticWasteManagement
                 await migrator.ManageWaste(clean);
                 uow.Commit();
                 Logger.Log("Galactic waste has been managed!", "success");
-                Output?.Dump();
             }
         }
 
-        public static IGalacticWasteManager Create(IProjectSettings projectSettings, string connectionString, string databaseName)
+        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString, string databaseName)
         {
             if (projectSettings == null)
             {
@@ -80,8 +79,8 @@ namespace GalacticWasteManagement
             };
 
             gwm.MigratorFactories = new Dictionary<string, Func<IConnection, ITransaction, IMigration>> {
-                    {"GreenField", (c, t) => new GreenFieldMigration(gwm.ProjectSettings, gwm.Logger, c,t) },
-                    {"LiveField", (c, t) => new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, c,t) }
+                    {"GreenField", (c, t) => new GreenFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) },
+                    {"LiveField", (c, t) => new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) }
                 };
             return gwm;
         }

@@ -4,7 +4,7 @@ namespace GalacticWasteManagement.Output
 {
     public interface IOutput
     {
-        MiniProfiler MiniProfiler { set; }
+        MiniProfiler MiniProfiler { set; get; }
         void Dump();
     }
 }

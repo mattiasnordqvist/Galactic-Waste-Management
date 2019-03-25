@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
+using GalacticWasteManagement.Output;
 using GalacticWasteManagement.Scripts;
 using JellyDust;
 using JellyDust.Dapper;
+using StackExchange.Profiling;
 
 namespace GalacticWasteManagement
 {
     public abstract class MigrationBase : IMigration
     {
         protected IProjectSettings ProjectSettings { get; }
-
         protected ILogger Logger { get; }
+        public IOutput Output { get; }
 
         protected IConnection Connection { get; }
         protected ITransaction Transaction { get; }
@@ -23,11 +25,13 @@ namespace GalacticWasteManagement
         protected bool AllowDrop { get; set; } = false;
         protected bool AllowCreate { get; set; } = false;
         public string DatabaseName { get; set; }
+
         public Dictionary<string, string> ScriptVariables { get; set; }
 
-        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction)
+        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction)
         {
             Logger = logger;
+            Output = output;
             Connection = connection;
             Transaction = transaction;
             ProjectSettings = projectSettings;
@@ -40,8 +44,11 @@ namespace GalacticWasteManagement
             foreach (var script in scripts)
             {
                 Logger.Log($"Executing script '{script.Name}'", "info");
+                using (var step = Output.MiniProfiler.Step(script.Name))
+                {
+                    await script.Apply(Connection, ScriptVariables);
+                }
 
-                await script.Apply(Connection, ScriptVariables);
                 if (journal)
                 {
                     var nextVersion = version ?? ProjectSettings.MigrationVersioning.DetermineVersion(script);
@@ -53,8 +60,11 @@ namespace GalacticWasteManagement
                         Version = nextVersion,
                         Hashed = script.Hashed
                     };
+                    using (var step = Output.MiniProfiler.Step($"Journaling {script.Name}"))
+                    {
+                        await Connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hashed) values (@Version, @Type, @Name, @Applied, @Hashed)", nextSchemaJournalVersion);
+                    }
 
-                    await Connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hashed) values (@Version, @Type, @Name, @Applied, @Hashed)", nextSchemaJournalVersion);
                     lastVersion = nextSchemaJournalVersion;
                 }
             }

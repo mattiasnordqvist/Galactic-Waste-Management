@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
+using GalacticWasteManagement.Output;
 using HonestNamespace;
 using JellyDust;
 
@@ -11,7 +12,7 @@ namespace GalacticWasteManagement
     public class GreenFieldMigration : MigrationBase
     {
 
-        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
+        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction) : base(projectSettings, logger, output, connection, transaction)
         {
             AllowCleanSchema = true;
             AllowCreate = true;

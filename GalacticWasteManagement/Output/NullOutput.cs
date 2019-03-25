@@ -4,7 +4,17 @@ namespace GalacticWasteManagement.Output
 {
     public class NullOutput : IOutput
     {
-        public MiniProfiler MiniProfiler { set { value?.Ignore(); } }
+        private MiniProfiler _profiler;
+
+        public MiniProfiler MiniProfiler
+        {
+            set
+            {
+                value?.Ignore();
+                _profiler = value;
+            }
+            get { return _profiler; }
+        }
 
         public void Dump() { }
     }
