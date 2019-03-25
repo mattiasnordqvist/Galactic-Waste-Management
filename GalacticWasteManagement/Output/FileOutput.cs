@@ -21,11 +21,12 @@ namespace GalacticWasteManagement.Output
         {
             var text = MiniProfiler.Root.Children
                 ?.SelectMany(x =>
-                 new List<string> { Environment.NewLine, $"-- {x.Name}" }
-                 .Union(
+                 new List<string> { $"{Environment.NewLine}-- {x.Name}" }
+                 .Concat(
                     x.CustomTimings.SelectMany(c =>
                        c.Value.Select(y => y.CommandString)
-                       .Intersperse("GO"))
+                       .Intersperse($"GO{Environment.NewLine}"))
+                       
                         .ToList()));
             if (text != null)
             {

@@ -13,10 +13,7 @@ namespace GalacticWasteManagement.Utilities
                 
                 yield return enumerator.Current;
                 hasNext = enumerator.MoveNext();
-                if(hasNext)
-                {
-                    yield return element;
-                }
+                yield return element;
             }
         }
     }
