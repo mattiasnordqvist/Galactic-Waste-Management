@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Scripts;
-using GalacticWasteManagement.Utilities;
 using JellyDust;
 using JellyDust.Dapper;
 
@@ -14,14 +13,14 @@ namespace GalacticWasteManagement
     {
         internal IConnection Connection { get; set; }
         protected readonly ILogger Logger;
-        private readonly Func<IScript, string> _getSchemaVersion;
+        protected readonly Func<string, string> _getSchemaVersion;
         internal IScriptProvider ScriptProvider { get; set; }
 
         public bool AllowCleanSchema { get; protected set; } = false;
         public bool AllowDrop { get; protected set; } = false;
         public bool AllowCreate { get; protected set; } = false;
 
-        public FieldBase(ILogger logger, Func<IScript, string> getSchemaVersion)
+        public FieldBase(ILogger logger, Func<string, string> getSchemaVersion)
         {
             Logger = logger;
             _getSchemaVersion = getSchemaVersion;
@@ -41,7 +40,7 @@ namespace GalacticWasteManagement
                 await script.Apply(Connection, scriptVariables);
                 if (journal)
                 {
-                    var nextVersion = _getSchemaVersion(script);
+                    var nextVersion = version ?? _getSchemaVersion(script.Name);
                     var nextSchemaJournalVersion = new SchemaVersionJournalEntry
                     {
                         Name = script.Name,
@@ -51,11 +50,7 @@ namespace GalacticWasteManagement
                         Hashed = script.Hashed
                     };
 
-                    await Connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], ScriptName, Applied, Hashed) values (@Version, @Type, @ScriptName, @Applied, @Hashed)", new
-                    {
-                        nextSchemaJournalVersion
-                    });
-
+                    await Connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hashed) values (@Version, @Type, @Name, @Applied, @Hashed)", nextSchemaJournalVersion);
                     lastVersion = nextSchemaJournalVersion;
                 }
             }
@@ -63,9 +58,9 @@ namespace GalacticWasteManagement
 
         }
 
-        public Task<List<SchemaVersionJournalEntry>> GetSchema(string schemaVersion = null, ScriptType? type = null)
+        public async Task<List<SchemaVersionJournalEntry>> GetSchema(string schemaVersion = null, ScriptType? type = null)
         {
-            return Connection.QueryAsync<SchemaVersionJournalEntry>($@"
+            return (await Connection.QueryAsync<SchemaVersionJournalEntry>($@"
                 SELECT * FROM (
                     SELECT * FROM SchemaVersionJournal WHERE [Type] <> '{nameof(ScriptType.RunIfChanged)}'
                     UNION ALL
@@ -73,14 +68,13 @@ namespace GalacticWasteManagement
                         SELECT Max(Id) FROM SchemaVersionJournal WHERE [Type] = '{nameof(ScriptType.RunIfChanged)}' GROUP BY Name
                     )
                 ) _
-                WHERE ([Version] = @version OR @version IS NULL) AND ([Type] = @type OR @type IS NULL)", new { type, version = schemaVersion })
-            .Then(x => Task.FromResult(x.ToList()));
+                WHERE ([Version] = @version OR @version IS NULL) AND ([Type] = @type OR @type IS NULL)", new { type = type?.ToString(), version = schemaVersion })
+            ).ToList();
         }
 
-        public Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry()
+        public async Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry()
         {
-            return Connection.QueryAsync<SchemaVersionJournalEntry>("SELECT TOP 1 * FROM SchemaVersionJournal ORDER BY Id")
-                .Then(x => Task.FromResult(x.FirstOrDefault()));
+            return (await Connection.QueryAsync<SchemaVersionJournalEntry>("SELECT TOP 1 * FROM SchemaVersionJournal ORDER BY Id DESC")).FirstOrDefault();
         }
 
         public async Task<bool> DbExist(string databaseName)

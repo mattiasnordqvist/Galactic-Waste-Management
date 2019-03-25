@@ -8,9 +8,10 @@ using JellyDust;
 
 namespace GalacticWasteManagement
 {
+
     public class GreenField : FieldBase
     {
-        public GreenField(ILogger logger, Func<IScript, string> getSchemaVersion) : base(logger, getSchemaVersion)
+        public GreenField(ILogger logger) : base(logger, x => "vNext")
         {
             AllowCleanSchema = true;
             AllowCreate = true;
@@ -45,7 +46,7 @@ namespace GalacticWasteManagement
             }
 
             Connection.DbConnection.ChangeDatabase(configuration.DatabaseName);
-            var triggeringTransaction = transaction.DbConnection;
+            var triggeringTransaction = transaction.DbTransaction;
             if (cleanRequested && !dbCreated)
             {
                 Logger.Log($"Cleaning database '{configuration.DatabaseName}' because parameter 'Clean' was set.", "info");

@@ -41,9 +41,12 @@ namespace GalacticWasteManagement
             var scriptProvider = new CompositeScriptProvider(defaultScriptProvider, _scriptProvider);
             using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(connectionStringBuilder.ConnectionString, _output)))
             {
+                _logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                 _logger.Log($"Managing galactic waste in {configuration.DatabaseName}", "important");
                 await field.ManageWasteInField(uow.Connection, uow.Transaction, configuration, scriptProvider);
+                uow.Commit();
                 _logger.Log("Galactic waste has been managed!", "success");
+                _output?.Dump();
             }
         }
     }
