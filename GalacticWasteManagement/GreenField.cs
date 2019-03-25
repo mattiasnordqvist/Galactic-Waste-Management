@@ -2,40 +2,39 @@
 using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
-using GalacticWasteManagement.Scripts;
 using HonestNamespace;
 using JellyDust;
 
 namespace GalacticWasteManagement
 {
 
-    public class GreenField : MigrationBase
+    public class GreenFieldMigration : MigrationBase
     {
 
-        public GreenField(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
+        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
         {
             AllowCleanSchema = true;
             AllowCreate = true;
             AllowDrop = true;
         }
 
-        public override async Task ManageWasteInField(WasteManagerConfiguration configuration)
+        public override async Task ManageWaste(bool clean)
         {
-            var cleanRequested = configuration.Clean;
+            var cleanRequested = clean;
             var hasCleaned = false;
             var isClean = Honestly.DontKnow;
 
-            var dbExists = await DbExist(configuration.DatabaseName);
+            var dbExists = await DbExist();
             var dbCreated = false;
 
             if (!dbExists)
             {
-                Logger.Log($"Database '{configuration.DatabaseName}' not found. It will be created.", "important");
-                await CreateSafe(configuration);
+                Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
+                await CreateSafe();
                 dbCreated = true;
                 dbExists = true;
                 Logger.Log("Creating table for schema versioning.", "info");
-                await FirstRun(configuration);
+                await FirstRun();
                 hasCleaned = true;
                 if (cleanRequested)
                 {
@@ -44,12 +43,12 @@ namespace GalacticWasteManagement
                 }
             }
 
-            Connection.DbConnection.ChangeDatabase(configuration.DatabaseName);
+            Connection.DbConnection.ChangeDatabase(DatabaseName);
             var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
             if (cleanRequested && !dbCreated)
             {
-                Logger.Log($"Cleaning database '{configuration.DatabaseName}' because parameter 'Clean' was set.", "info");
-                await CleanSchemaSafe(configuration);
+                Logger.Log($"Cleaning database '{DatabaseName}' because parameter 'Clean' was set.", "info");
+                await CleanSchemaSafe();
                 hasCleaned = true;
             }
             if (GetScripts(ScriptType.Migration).Any())
@@ -67,16 +66,16 @@ namespace GalacticWasteManagement
                 comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any())
             {
                 Logger.Log("Changed or removed scripts in vNext or Seed. Cleaning schema.", "important");
-                await CleanSchemaSafe(configuration);
+                await CleanSchemaSafe();
                 hasCleaned = true;
-                Logger.Log($"Performing vNext migrations for '{configuration.DatabaseName}' database.", "info");
-                await RunScripts(comparisonVNext.All, configuration, "vNext", ScriptType.vNext, true);
+                Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
+                await RunScripts(comparisonVNext.All, "vNext", ScriptType.vNext, true);
             }
             else if (comparisonVNext.New.Any())
             {
                 Logger.Log("New migrations in vNext found", "info");
-                Logger.Log($"Performing vNext migrations for '{configuration.DatabaseName}' database.", "info");
-                await RunScripts(comparisonVNext.New, configuration, "vNext", ScriptType.vNext);
+                Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
+                await RunScripts(comparisonVNext.New, "vNext", ScriptType.vNext);
             }
             else
             {
@@ -89,8 +88,8 @@ namespace GalacticWasteManagement
             if (changedComparison.New.Any() || changedComparison.Changed.Any())
             {
                 Logger.Log("Found changed or added RunIfChanged-scripts.", "info");
-                await RunScripts(changedComparison.Changed.Select(x => x.script), configuration, "vNext", ScriptType.RunIfChanged);
-                await RunScripts(changedComparison.New, configuration, "vNext", ScriptType.RunIfChanged);
+                await RunScripts(changedComparison.Changed.Select(x => x.script), "vNext", ScriptType.RunIfChanged);
+                await RunScripts(changedComparison.New, "vNext", ScriptType.RunIfChanged);
             }
             else
             {
@@ -99,14 +98,14 @@ namespace GalacticWasteManagement
 
             if (hasCleaned && comparisonSeed.All.Any())
             {
-                Logger.Log($"Running seeds for '{configuration}' database.", "info");
-                await RunScripts(comparisonSeed.All, configuration, "Local", ScriptType.Seed);
+                Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
+                await RunScripts(comparisonSeed.All, "Local", ScriptType.Seed);
             }
             else if (comparisonSeed.New.Any())
             {
                 Logger.Log("New seed scripts found", "info");
-                Logger.Log($"Running seeds for '{configuration.DatabaseName}' database.", "info");
-                await RunScripts(comparisonSeed.New, configuration, "Local", ScriptType.Seed);
+                Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
+                await RunScripts(comparisonSeed.New, "Local", ScriptType.Seed);
             }
             else
             {

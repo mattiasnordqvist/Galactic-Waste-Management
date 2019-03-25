@@ -5,24 +5,24 @@ using JellyDust;
 
 namespace GalacticWasteManagement
 {
-    public class LiveField : MigrationBase
+    public class LiveFieldMigration : MigrationBase
     {
-        public LiveField(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
+        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IConnection connection, ITransaction transaction) : base(projectSettings, logger, connection, transaction)
         {
             AllowCreate = true;
         }
 
-        public override async Task ManageWasteInField(WasteManagerConfiguration configuration)
+        public override async Task ManageWaste(bool clean)
         {
-            var dbExists = await DbExist(configuration.DatabaseName);
+            var dbExists = await DbExist();
             if (!dbExists)
             {
-                Logger.Log($"No '{configuration.DatabaseName}' database found. It will be created.", "warning");
-                await CreateSafe(configuration);
-                await FirstRun(configuration);
+                Logger.Log($"No '{DatabaseName}' database found. It will be created.", "warning");
+                await CreateSafe();
+                await FirstRun();
             }
 
-            Connection.DbConnection.ChangeDatabase(configuration.DatabaseName);
+            Connection.DbConnection.ChangeDatabase(DatabaseName);
             var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
             // execute all scripts in Migrations in latest version.
             var scripts = ProjectSettings.ScriptProvider.GetScripts(ScriptType.Migration);
@@ -47,7 +47,7 @@ namespace GalacticWasteManagement
             if (newerComparison.New.Any())
             {
                 Logger.Log("New migration scripts were found and will be run.", "info");
-                lastVersion = await RunScripts(scripts, configuration, null, ScriptType.Migration);
+                lastVersion = await RunScripts(scripts, null, ScriptType.Migration);
             }
 
             if (ProjectSettings.ScriptProvider.GetScripts(ScriptType.vNext).Any())
@@ -61,13 +61,15 @@ namespace GalacticWasteManagement
             if (changedComparison.New.Any() || changedComparison.Changed.Any())
             {
                 Logger.Log("Found changed or added RunIfChanged-scripts.", "info");
-                await RunScripts(changedComparison.Changed.Select(x => x.script), configuration, lastVersion.Version, ScriptType.RunIfChanged);
-                await RunScripts(changedComparison.New, configuration, lastVersion.Version, ScriptType.RunIfChanged);
+                await RunScripts(changedComparison.Changed.Select(x => x.script), lastVersion.Version, ScriptType.RunIfChanged);
+                await RunScripts(changedComparison.New, lastVersion.Version, ScriptType.RunIfChanged);
             }
             else
             {
                 Logger.Log("No new or changed RunIfChanged scripts", "info");
             }
         }
+
+    
     }
 }
