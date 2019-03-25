@@ -51,6 +51,11 @@ namespace GalacticWasteManagement
             }
         }
 
+        public static GalacticWasteManager Create<T>(string connectionString)
+        {
+            return Create(new DefaultProjectSettings<T>(), connectionString);
+        }
+
         public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString)
         {
             if (projectSettings == null)
