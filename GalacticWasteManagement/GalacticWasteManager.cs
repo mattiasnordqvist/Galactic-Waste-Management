@@ -13,7 +13,7 @@ namespace GalacticWasteManagement
     public class GalacticWasteManager : IGalacticWasteManager
     {
         public IProjectSettings ProjectSettings { get; private set; }
-        public string ConnectionString { get; private set; }
+        public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; }
         public string DatabaseName { get; private set; }
 
         public IOutput Output { get; set; }
@@ -28,19 +28,16 @@ namespace GalacticWasteManagement
         {
             var variables = scriptVariables ?? new Dictionary<string, string>();
             variables.Add("DbName", DatabaseName);
-            var connectionStringBuilder = new SqlConnectionStringBuilder(ConnectionString)
-            {
-                InitialCatalog = "master"
-                // - But what if we can't connect to master?!
-                // - But what if we can't connect to db in connectionstring!?
-                // - But what if we just handle stuff accordingly?!
-            };
+            ConnectionStringBuilder.InitialCatalog = "master";
+            // - But what if we can't connect to master?!
+            // - But what if we can't connect to db in connectionstring!?
+            // - But what if we just handle stuff accordingly?!
 
             var defaultScriptProvider = new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(MigrationBase)), "Scripts.Defaults");
             //this row below is cheating
             ProjectSettings.ScriptProvider = new CompositeScriptProvider(defaultScriptProvider, ProjectSettings.ScriptProvider);
-            
-            using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(connectionStringBuilder.ConnectionString, Output)))
+
+            using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(ConnectionStringBuilder.ConnectionString, Output)))
             {
                 Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                 Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
@@ -50,10 +47,11 @@ namespace GalacticWasteManagement
                 await migrator.ManageWaste(clean);
                 uow.Commit();
                 Logger.Log("Galactic waste has been managed!", "success");
+                Output.Dump();
             }
         }
 
-        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString, string databaseName)
+        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString)
         {
             if (projectSettings == null)
             {
@@ -65,16 +63,13 @@ namespace GalacticWasteManagement
                 throw new ArgumentNullException(nameof(connectionString));
             }
 
-            if (databaseName == null)
-            {
-                throw new ArgumentNullException(nameof(databaseName));
-            }
+            var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
             var gwm = new GalacticWasteManager
             {
                 ProjectSettings = projectSettings,
-                ConnectionString = connectionString,
-                DatabaseName = databaseName,
-                Logger = new ConsoleLogger(databaseName),
+                ConnectionStringBuilder = connectionStringBuilder,
+                DatabaseName = connectionStringBuilder.InitialCatalog,
+                Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
             };
 

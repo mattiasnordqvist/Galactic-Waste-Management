@@ -23,7 +23,7 @@ namespace GalacticWasteManagement
             MiniProfiler mp = new MiniProfiler($"{Assembly.GetEntryAssembly().GetName()} - DatabaseUpdater", MiniProfiler.DefaultOptions);
             (output ?? (output = new NullOutput())).MiniProfiler = mp;
             var connection = new StackExchange.Profiling.Data.ProfiledDbConnection(new SqlConnection(connectionString), mp);
-            connection.Disposed += (_, __) => { mp.Stop(); output.Dump(); };
+            connection.Disposed += (_, __) => { mp.Stop(); };
 
             using (mp?.Ignore())
             {
