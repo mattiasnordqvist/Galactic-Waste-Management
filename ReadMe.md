@@ -19,11 +19,31 @@ Soooo, I felt that I'm done creating garbage migration scripts that are not work
 
 # Galactic Waste Management
 
-// some quickstart here
+## Quickstart
+1. Create a new dot net core console app. 
+2. Run *Install-Package GalacticWasteManagement*
+3. Paste this in your Program.cs
+```csharp
+static async Task Main(string[] args)
+{
+    var connectionString = "your-connection-string";
+    var wasteManager = GalacticWasteManager.Create<Program>(connectionString);
+    await wasteManager.Update("GreenField");
+    Console.ReadLine();
+}
+```
+4. Make sure you're building C# 7.1 or higher for the async Main to work. *Right click on your project -> Properties -> Build -> Advanced... -> Language Version* 
 
+5. Create a folder called Scripts in your project
+6. Create three folders inside the newly created Scripts folder, named *RunIfChanged*, *Seed* and *vNext*
+7. Create a sql file that creates some tables or something and put it into the vNext folder.
+8. Set build action of that file to *Embedded resource*.
+9. Done! Run!
+
+## Modes
 Migrating database schema and content is done differently depending on mode.
 
-## GreenField
+### GreenField
 
 One of the modes of Galactic Waste Management is GreenField. This mode is used when you are developing a database from scratch.
 In GreenField, scripts are executed like this.
@@ -56,7 +76,7 @@ In any instance where the schema has to be cleaned (changed or removed vNext or 
 All scripts in GreenField development will have version 'vNext' or 'local' (only seed scripts) in the SchemaVersionJournal table.
 Create/Drop/FirstRun-scripts are not journaled.
 
-## Live Field
+### Live Field
 
 LiveField mode is supposed to be used when running against a production database. Before this happens, scripts should have been moved from vNext to Migrations/{version}.
 LiveField mode works like Green Field with a few exceptions.
