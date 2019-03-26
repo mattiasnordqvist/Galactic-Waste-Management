@@ -18,7 +18,15 @@ namespace GalacticWasteManagement
 
         public IOutput Output { get; set; }
         public ILogger Logger { get; set; }
-        public Dictionary<string, Func<IConnection, ITransaction, IMigration>> MigratorFactories { get; private set; }
+        public static Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> MigratorFactories { get; private set; }
+
+        static GalacticWasteManager()
+        {
+            MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> {
+                    {"GreenField", (gwm, c, t) => new GreenFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) },
+                    {"LiveField", (gwm, c, t) => new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) }
+                };
+        }
 
         protected GalacticWasteManager() { }
 
@@ -41,7 +49,7 @@ namespace GalacticWasteManagement
             {
                 Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                 Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
-                var migrator = MigratorFactories[mode](uow.Connection, uow.Transaction);
+                var migrator = MigratorFactories[mode](this, uow.Connection, uow.Transaction);
                 migrator.DatabaseName = DatabaseName;
                 migrator.ScriptVariables = variables;
                 await migrator.ManageWaste(clean);
@@ -78,10 +86,6 @@ namespace GalacticWasteManagement
                 Output = new NullOutput(),
             };
 
-            gwm.MigratorFactories = new Dictionary<string, Func<IConnection, ITransaction, IMigration>> {
-                    {"GreenField", (c, t) => new GreenFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) },
-                    {"LiveField", (c, t) => new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) }
-                };
             return gwm;
         }
     }
