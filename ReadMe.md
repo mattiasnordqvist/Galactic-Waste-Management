@@ -63,7 +63,14 @@ Default versioning is *Major.Minor*. Migration scripts related to a release are 
 You can change the versioning strategy by creating your own implementation of *IMigrationVersioning*.
 
 #### ScriptProviders
-*Currently not really configurable, wait for #9*
+By default, scripts are read from *.sql*-files located in two different locations. The first location is part of the GalacticWastePackage itself, and you will never see them. These are scripts for creating the database, dropping schema and creating the SchemaVersionJournal table. The other script are by default read from the assembly that contains the class you use as type parameter in  *GalacticWasteManager.Create*. You can create and provide your own *IScriptProvider*s. If you still want to create the defaults, this is what they look like.
+
+```csharp
+new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(MigrationBase)), "Scripts.Defaults"),
+new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(T)), "Scripts")
+```
+
+A *IScriptProvider* can return any implementation of *IScript*. There are some rules regarding how *IScript*s should be implemented. More on that further down.
 
 ### Migration Settings
 These settings are typically provided through *wasteManager.Update()* each time you do a migration.
