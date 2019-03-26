@@ -11,7 +11,7 @@ namespace GalacticWasteManagement
 
     public class GreenFieldMigration : MigrationBase
     {
-
+        public static Func<GalacticWasteManager, IConnection, ITransaction, IMigration> Factory = (gwm, c, t) => new GreenFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t);
         public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction) : base(projectSettings, logger, output, connection, transaction)
         {
             AllowCleanSchema = true;

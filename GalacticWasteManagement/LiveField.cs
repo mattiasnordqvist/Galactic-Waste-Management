@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
@@ -8,6 +9,8 @@ namespace GalacticWasteManagement
 {
     public class LiveFieldMigration : MigrationBase
     {
+        public static Func<GalacticWasteManager, IConnection, ITransaction, IMigration> Factory = (gwm, c, t) => new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t);
+
         public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction) : base(projectSettings, logger, output, connection, transaction)
         {
             AllowCreate = true;

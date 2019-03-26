@@ -23,16 +23,15 @@ namespace GalacticWasteManagement
         static GalacticWasteManager()
         {
             MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> {
-                    {"GreenField", (gwm, c, t) => new GreenFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) },
-                    {"LiveField", (gwm, c, t) => new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t) }
+                    {"GreenField", GreenFieldMigration.Factory },
+                    {"LiveField", LiveFieldMigration.Factory }
                 };
         }
 
         protected GalacticWasteManager() { }
 
 
-
-        public async Task Update(string mode, bool clean = false, Dictionary<string, string> scriptVariables = null)
+        public async Task Update(Func<GalacticWasteManager, IConnection, ITransaction, IMigration> migratorFactory, bool clean = false, Dictionary<string, string> scriptVariables = null)
         {
             var variables = scriptVariables ?? new Dictionary<string, string>();
             variables.Add("DbName", DatabaseName);
@@ -49,7 +48,7 @@ namespace GalacticWasteManagement
             {
                 Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                 Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
-                var migrator = MigratorFactories[mode](this, uow.Connection, uow.Transaction);
+                var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
                 migrator.DatabaseName = DatabaseName;
                 migrator.ScriptVariables = variables;
                 await migrator.ManageWaste(clean);
@@ -57,6 +56,10 @@ namespace GalacticWasteManagement
                 Logger.Log("Galactic waste has been managed!", "success");
                 Output.Dump();
             }
+        }
+        public async Task Update(string mode, bool clean = false, Dictionary<string, string> scriptVariables = null)
+        {
+            await Update(MigratorFactories[mode], clean, scriptVariables);
         }
 
         public static GalacticWasteManager Create<T>(string connectionString)
