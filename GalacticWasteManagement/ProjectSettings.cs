@@ -1,15 +1,16 @@
-﻿using GalacticWasteManagement.Scripts;
+﻿using System.Collections.Generic;
+using GalacticWasteManagement.Scripts;
 
 namespace GalacticWasteManagement
 {
     public class ProjectSettings : IProjectSettings
     {
-        public ProjectSettings(IMigrationVersioning migrationVersioning, IScriptProvider scriptProvider)
+        public ProjectSettings(IMigrationVersioning migrationVersioning, List<IScriptProvider> scriptProviders)
         {
             MigrationVersioning = migrationVersioning;
-            ScriptProvider = scriptProvider;
+            ScriptProviders = scriptProviders;
         }
         public IMigrationVersioning MigrationVersioning { get; set; }
-        public IScriptProvider ScriptProvider { get; set; }
+        public List<IScriptProvider> ScriptProviders { get; set; }
     }
 }

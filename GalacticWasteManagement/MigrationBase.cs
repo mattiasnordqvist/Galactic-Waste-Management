@@ -125,7 +125,7 @@ namespace GalacticWasteManagement
             }
 
             Logger.Log($"Dropping '{DatabaseName}' database schema.", "important");
-            return RunScripts(ProjectSettings.ScriptProvider.GetScripts(ScriptType.Drop), null, null, false);
+            return RunScripts(GetScripts(ScriptType.Drop), null, null, false);
         }
 
         protected Task CreateSafe()
@@ -136,12 +136,12 @@ namespace GalacticWasteManagement
             }
 
             Logger.Log($"Creating database '{DatabaseName}'.", "important");
-            return RunScripts(ProjectSettings.ScriptProvider.GetScripts(ScriptType.Create), null, null, false, "master");
+            return RunScripts(GetScripts(ScriptType.Create), null, null, false, "master");
         }
 
         protected Task FirstRun()
         {
-            return RunScripts(ProjectSettings.ScriptProvider.GetScripts(ScriptType.FirstRun), null, null, false);
+            return RunScripts(GetScripts(ScriptType.FirstRun), null, null, false);
         }
 
         protected static SchemaComparison Compare(IEnumerable<IScript> scripts, IEnumerable<SchemaVersionJournalEntry> schema)
@@ -156,14 +156,14 @@ namespace GalacticWasteManagement
 
         protected async Task<SchemaComparison> Compare(string version, ScriptType type)
         {
-            var scripts = ProjectSettings.ScriptProvider.GetScripts(type);
+            var scripts = GetScripts(type);
             var schema = await GetSchema(version, type);
             return Compare(scripts, schema);
         }
 
         protected IEnumerable<IScript> GetScripts(ScriptType scriptType)
         {
-            return ProjectSettings.ScriptProvider.GetScripts(scriptType);
+            return ProjectSettings.ScriptProviders.SelectMany(x => x.GetScripts(scriptType));
         }
 
         public abstract Task ManageWaste(bool clean);

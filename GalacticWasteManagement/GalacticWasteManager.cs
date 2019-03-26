@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Reflection;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
-using GalacticWasteManagement.Scripts.ScriptProviders;
 using JellyDust;
 
 namespace GalacticWasteManagement
@@ -39,10 +37,6 @@ namespace GalacticWasteManagement
             // - But what if we can't connect to master?!
             // - But what if we can't connect to db in connectionstring!?
             // - But what if we just handle stuff accordingly?!
-
-            var defaultScriptProvider = new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(MigrationBase)), "Scripts.Defaults");
-            //this row below is cheating
-            ProjectSettings.ScriptProvider = new CompositeScriptProvider(defaultScriptProvider, ProjectSettings.ScriptProvider);
 
             using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(ConnectionStringBuilder.ConnectionString, Output)))
             {

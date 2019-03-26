@@ -28,9 +28,11 @@ namespace GalacticWasteManagement
 
             Connection.DbConnection.ChangeDatabase(DatabaseName);
             var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
+            
             // execute all scripts in Migrations in latest version.
-            var scripts = ProjectSettings.ScriptProvider.GetScripts(ScriptType.Migration);
+            var scripts = GetScripts(ScriptType.Migration);
             var schema = await GetSchema(null, ScriptType.Migration);
+
             // if any changed/removed/added on earlier versions, warn
             // all added on current version and onward should be new, run them
             var lastJournalEntry = await GetLastSchemaVersionJournalEntry();
@@ -54,7 +56,7 @@ namespace GalacticWasteManagement
                 lastVersion = await RunScripts(scripts, null, ScriptType.Migration);
             }
 
-            if (ProjectSettings.ScriptProvider.GetScripts(ScriptType.vNext).Any())
+            if (GetScripts(ScriptType.vNext).Any())
             {
                 Logger.Log("Scripts found in vNext folder. No scripts should exist in vNext folder when doing Live Field migrations. Scripts will not be run.", "warning");
             }
