@@ -40,8 +40,39 @@ static async Task Main(string[] args)
 8. Set build action of that file to *Embedded resource*.
 9. Done! Run!
 
+## Configuration
+
+### Environment
+
+#### Logging
+GalacticWasteManager continuosly tell you what it is doing through an *ILogger*. Change through *wasteManager.Logger*. Default is *ConsoleLogger*. Implement *ILogger* interface to create your own. There are no other implementations than *ConsoleLogger* shipped with GalacticWasteManagement.
+
+#### Output
+GalacticWasteManager can output all relevant sql that was run after a migration is complete. Change through *wasteManager.Output*. Default is *NullOutput*. Implement *IOutput* interface to create your own. GalacticWasteManager ships with a *FileOuput* that you can use. 
+
+### Project Settings
+Project settings are supposed to stay basically the same through your whole project. You decide what they should be once, and then you leave them at that. They do not change when switching environments.
+
+#### Versioning 
+*Currently not really configurable, wait for #12*
+
+#### ScriptProviders
+*Currently not really configurable, wait for #9*
+
+### Migration Settings
+These settings are typically provided through *wasteManager.Update()* each time you do a migration.
+
+#### Mode (required)
+Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. You can create your own migration strategies. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*. (Note to self: Why can't you just supply it directly in the Update-method?) More on modes further down. 
+
+#### Clean
+Default *false*. Instructs migrator to clean schema and start anew. There are other situations when schema can be cleaned even though this settings is *false*. More on that further down.
+
+#### ScriptVariables
+Will by default contain your database name (as provided in connectionstring) on key *DbName*. Otherwise empty. Any *$variable$* in your scripts will be replaced with matching values in the scriptVariables dictionary. Avoid using this unless you're okay with coupling your sql-scripts with GalacticWasteManagement. 
+
 ## Modes
-Migrating database schema and content is done differently depending on mode.
+Migrating database schema and content works differently depending on mode.
 
 ### GreenField
 
@@ -76,7 +107,7 @@ In any instance where the schema has to be cleaned (changed or removed vNext or 
 All scripts in GreenField development will have version 'vNext' or 'local' (only seed scripts) in the SchemaVersionJournal table.
 Create/Drop/FirstRun-scripts are not journaled.
 
-### Live Field
+### LiveField
 
 LiveField mode is supposed to be used when running against a production database. Before this happens, scripts should have been moved from vNext to Migrations/{version}.
 LiveField mode works like Green Field with a few exceptions.
