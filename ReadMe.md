@@ -40,6 +40,9 @@ static async Task Main(string[] args)
 8. Set build action of that file to *Embedded resource*.
 9. Done! Run!
 
+## Creating a new migrations release
+*I'll fill this out in the future, promise*
+
 ## Configuration
 
 ### Environment
