@@ -63,7 +63,7 @@ Project settings are supposed to stay basically the same through your whole proj
 These settings are typically provided through *wasteManager.Update()* each time you do a migration.
 
 #### Mode (required)
-Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. You can create your own migration strategies. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*. (Note to self: Why can't you just supply it directly in the Update-method?) More on modes further down. 
+Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. You can create your own migration strategies. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*. ~(Note to self: Why can't you just supply it directly in the Update-method?)~ (Now you can supply a factory func.) More on modes further down. 
 
 #### Clean
 Default *false*. Instructs migrator to clean schema and start anew. There are other situations when schema can be cleaned even though this settings is *false*. More on that further down.
