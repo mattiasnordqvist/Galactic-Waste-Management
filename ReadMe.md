@@ -55,10 +55,12 @@ GalacticWasteManager continuosly tell you what it is doing through an *ILogger*.
 GalacticWasteManager can output all relevant sql that was run after a migration is complete. Change through *wasteManager.Output*. Default is *NullOutput*. Implement *IOutput* interface to create your own. GalacticWasteManager ships with a *FileOuput* that you can use. 
 
 ### Project Settings
-Project settings are supposed to stay basically the same through your whole project. You decide what they should be once, and then you leave them at that. They do not change when switching environments.
+Project settings are supposed to stay basically the same through your whole project. You decide what they should be once, and then you leave them at that. They do not change when switching environments. These settings can only be set through an overload of the  *GalacticWasteManager.Create* method.
 
 #### Versioning 
-*Currently not really configurable, wait for #12*
+Default versioning is *Major.Minor*. Migration scripts related to a release are expected to live in a folder with the a version conforming to this standard as its name (i.e. 4.2, or 12.3), under the *Scripts.Migration* folder. Scripts are not versioned _below_ *minor*. Scripts with the same version are executed in alphabetical order. In the schema journal, you can look at the *Id* column if you'd want to know which order scripts were run.
+
+You can change the versioning strategy by creating your own implementation of *IMigrationVersioning*.
 
 #### ScriptProviders
 *Currently not really configurable, wait for #9*
