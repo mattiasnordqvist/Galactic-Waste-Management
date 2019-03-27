@@ -63,7 +63,7 @@ Default versioning is *Major.Minor*. Migration scripts related to a release are 
 You can change the versioning strategy by creating your own implementation of *IMigrationVersioning*.
 
 #### ScriptProviders
-By default, scripts are read from *.sql*-files located in two different locations. The first location is part of the GalacticWastePackage itself, and you will never see them. These are scripts for creating the database, dropping schema and creating the SchemaVersionJournal table. The other script are by default read from the assembly that contains the class you use as type parameter in  *GalacticWasteManager.Create*. You can create and provide your own *IScriptProvider*s. If you still want to create the defaults, this is what they look like.
+By default, scripts are read from *.sql*-files located in two different locations. The first location is part of the GalacticWastePackage itself, and you will never see them. These are scripts for creating the database, dropping schema and creating the SchemaVersionJournal table. The other scripts are by default read from the assembly that contains the class you use as type parameter in  *GalacticWasteManager.Create*. You can create and provide your own *IScriptProvider*s if you'd like. If you still want to incorporate the defaults, this is what they look like:
 
 ```csharp
 new BuiltInScriptsScriptProvider(),
@@ -92,33 +92,35 @@ Migrating database schema and content works differently depending on mode.
 One of the modes of Galactic Waste Management is GreenField. This mode is used when you are developing a database from scratch.
 In GreenField, scripts are executed like this.
 
-### Create
-All scripts in the Create-folder will be executed if a database does not already exist. There is typically only one script here and it creates the database.
+#### Create
+Script of ScriptType *Create* are run if a database does not exist. There is typically only one script here and it creates the database.
+//TODO: Let user configure how to check if database exist.
 
-### FirstRun
-All scripts in the FirstRun-folder are run if the database was just created or if it was just cleaned (more on that later).
-By default, a script to create the table holding schema version information can be found here.
+#### Initialize
+Script of ScriptType *Initialize* are run if the database was just created or if it was just cleaned (more on that later).
+*y default, a script to create the table holding schema version information can be found here. That table is called *SchemaVersionJournal*
+//TODO: Let user configurehow to check if initialize script should run.
 
-### vNext
-Next, all scripts in vNext will be run. At this point, vNext contains all scripts for the first version. In Green Field, this folder typically contain CREATE TABLE-scripts for schema creation, and INSERT-scripts for content creation.
-Everytime the DatabaseUpdater runs, it will look for new, changed or removed scripts in this folder. If there are any script removed or changed, the database will be cleaned (more on that later) before all vNext scripts are run.
-If there is only new scripts found, the will be run without cleaning the database first. If all scripts are unchanged, nothing will be done here.
+#### vNext
+Next, all scripts with ScriptType *vNext* will be run. At this point, *vNext* should contain all scripts for the first version. In GreenField, these scripts are typically CREATE TABLE-scripts for schema creation, and INSERT-scripts for content creation.
+Everytime the GreenField migration runs, it will look for new, changed or removed scripts in this folder. If there are any scripts removed or changed, the database will be cleaned (more on that later) before all vNext scripts are run.
+If there is only new scripts found, they will be run without cleaning the database first. If all scripts are unchanged, nothing will be done here.
 
-### RunIfChanged
-This folder contain scripts that will be run if they are new or changed. This folder typically contain stored procedures, views, triggers functions and the like. These scripts should typically be idempotent.
-During Green Field development you can add and remove scripts from here as you like, since it easy to force a new clean migration.
+#### RunIfChanged
+These scripts are run if they are new or changed. This folder typically contain stored procedures, views, triggers functions and the like. These scripts must be idempotent.
+During GreenField development you can add and remove scripts from here as you like, since it easy to force a new clean migration.
 
-### Seed
-Scripts in this folder are only run in Green Field. They typically contain data that aids the developers by creating some fake data.
+#### Seed
+*Seed* type scripts are only run in GreenField. They typically contain data that aids the developers by creating some fake data.
 Changes or removal of any Seed scripts will trigger a clean migration, to ensure the data matches the schema. 
 If the folder only contain Added files though, they will be run without cleaning and migrating the schema again.
+These are the last scripts executed before the migration is complete.
 
-### Drop
-In any instance where the schema has to be cleaned (changed or removed vNext or Seed scripts), the scripts in this folder will be run.
-
+#### Drop
+In any instance where the schema has to be cleaned (changed or removed vNext or Seed scripts), all scripts of type *Drop* will be run.
 
 All scripts in GreenField development will have version 'vNext' or 'local' (only seed scripts) in the SchemaVersionJournal table.
-Create/Drop/FirstRun-scripts are not journaled.
+Create/Drop/Initialize-scripts are not journaled.
 
 ### LiveField
 
