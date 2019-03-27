@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace GalacticWasteManagement.Scripts.ScriptProviders
+namespace GalacticWasteManagement.Scripts.EmbeddedScripts
 {
     public static class EmbeddedResourceReader
     {

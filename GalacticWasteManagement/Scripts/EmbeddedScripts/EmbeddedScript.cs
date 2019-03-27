@@ -1,4 +1,4 @@
-﻿namespace GalacticWasteManagement.Scripts.ScriptProviders
+﻿namespace GalacticWasteManagement.Scripts.EmbeddedScripts
 {
 
     public class EmbeddedScript : ScriptBase

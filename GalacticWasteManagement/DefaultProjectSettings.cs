@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using GalacticWasteManagement.Scripts;
+using GalacticWasteManagement.Scripts.EmbeddedScripts;
 using GalacticWasteManagement.Scripts.ScriptProviders;
 
 namespace GalacticWasteManagement

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace GalacticWasteManagement.Scripts.ScriptProviders
+namespace GalacticWasteManagement.Scripts.EmbeddedScripts
 {
     public class EmbeddedScriptProvider : IScriptProvider
     {
@@ -20,7 +20,7 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
         public IEnumerable<IScript> GetScripts(ScriptType type)
         {
             return EmbeddedResourceReader.GetResourcesFrom(_scriptsAssembly, x => x.StartsWith($"{_namespacePrefix}.{_scriptsRootFolder}.{type}"))
-                .Select(x => new EmbeddedScript(x, type)).ToList();
+                .Select(x => new EmbeddedScript(x, type)).OrderBy(x => x.Name).ToList();
         }
 
     }

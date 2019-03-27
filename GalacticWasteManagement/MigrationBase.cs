@@ -155,7 +155,7 @@ namespace GalacticWasteManagement
 
         protected IEnumerable<IScript> GetScripts(ScriptType scriptType)
         {
-            return ProjectSettings.ScriptProviders.SelectMany(x => x.GetScripts(scriptType));
+            return ProjectSettings.ScriptProviders.SelectMany(x => x.GetScripts(scriptType)).OrderBy(x => x.Name);
         }
 
         public abstract Task ManageWaste(bool clean);
