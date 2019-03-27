@@ -155,7 +155,6 @@ Then, in your aspnet core project. Make your Main method look something like thi
 
     public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
         WebHost.CreateDefaultBuilder(args)
-            .UseLamar()
             .UseStartup<Startup>();
 }
 
