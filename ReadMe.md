@@ -13,10 +13,10 @@ This package is supposed to replace FluentMigrator, DbUp or RoundhousE or whatev
 
 #### Problems with DbUp
 * Promising, but I want to journal my EVERYTIME-scripts as well. The fact that they have changed is important, and I need to see which changes were part of a release.
-* I found something called Improving.DbUp which kinda seemed promising as well, but it wasn't net core compatible and also a piece of junk, not letting me decide for myself where my connectionstrings are.
+* I found something called Improving.DbUp which kinda seemed promising as well, but it wasn't net core compatible and also a piece of junk not letting me decide where my connectionstrings come from.
 * I tried to modify DbUp by creating my own implementations of scriptproviders and journalingstuff, and realized I'm changing so much stuff it didn't look like DbUp anymore and it was not even exactly as I'd like it anyway.
 
-Soooo, I felt that I'm done creating garbage migration scripts that are not working the way I want. Welcome to Galactic Waste Management.
+Soooo, I felt that I'm done creating garbage migration scripts that are not working the way I want... Welcome to Galactic Waste Management.
 
 # Galactic Waste Management
 
@@ -55,12 +55,12 @@ GalacticWasteManager can output all relevant sql that was run after a migration 
 Project settings are supposed to stay basically the same through your whole project. You decide what they should be once, and then you leave them at that. They do not change when switching environments. These settings can only be set through an overload of the  *GalacticWasteManager.Create* method.
 
 #### Versioning 
-Default versioning is *Major.Minor*. Migration scripts related to a release are expected to live in a folder with the a version conforming to this standard as its name (i.e. 4.2, or 12.3), under the *Scripts.Migration* folder. Scripts are not versioned _below_ *minor*. Scripts with the same version are executed in alphabetical order. In the schema journal, you can look at the *Id* column if you'd want to know which order scripts were run.
+Default versioning is *Major.Minor*. Migration scripts related to a release are expected to live in a folder with the a version conforming to this standard as its name (i.e. 4.2, or 12.3), under the *Scripts.Migration* folder. Scripts are not versioned _below_ *minor*. Scripts with the same version are executed in alphabetical order. In the schema journal, you can look at the *Id* or *Applied* column if you want to know which order scripts were run.
 
 You can change the versioning strategy by creating your own implementation of *IMigrationVersioning*.
 
 #### ScriptProviders
-By default, scripts are read from *.sql*-files located in two different locations. The first location is part of the GalacticWastePackage itself, and you will never see them. These are scripts for creating the database, dropping schema and creating the SchemaVersionJournal table. The other scripts are by default read from the assembly that contains the class you use as type parameter in  *GalacticWasteManager.Create*. They are expected to live in folders named *Scripts/vNext*, *Scripts/RunIfChanged*, *Scripts/Migration* and *Scripts/Seed* and they are expected to be embedded resources. You can create and provide your own *IScriptProvider*s if you'd like. If you still want to incorporate the defaults, this is what they look like:
+By default, scripts are read from *.sql*-files located in two different locations. The first location is part of the GalacticWastep package itself, and you will never see them. These are scripts for creating the database, dropping schema and creating the SchemaVersionJournal table. The other scripts are by default read from the assembly that contains the class you use as type parameter in  *GalacticWasteManager.Create*. They are expected to live in folders named *Scripts/vNext*, *Scripts/RunIfChanged*, *Scripts/Migration* and *Scripts/Seed* and they are expected to be embedded resources. You can create and provide your own *IScriptProvider*s if you'd like. If you still want to incorporate the defaults, this is what they look like:
 
 ```csharp
 new BuiltInScriptsScriptProvider(),
@@ -76,7 +76,7 @@ These settings are typically provided through *wasteManager.Update()* each time 
 Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. *GreenField* is for when you are developing on a brand new database. *LiveField* is for your production environment, no matter if the database is new or not. *BrownField* is for developing after your first release. You can create your own migration strategies as well. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*, or you can supply it directly to the Update-method if you don't want it easily configurable. Details the different modes and how you can implement your own further down. 
 
 #### Clean
-Default *false*. Instructs migrator to clean schema and start anew. There are other situations when schema can be cleaned even though this settings is *false*, and there are also situations where cleaning schema is not appropriate. More on that further down.
+Default *false*. Instructs migrator to clean schema and start anew. There are situations when schema can be cleaned even though this settings is *false*, and there are also situations where cleaning schema is not appropriate. It us up to the current mode to honor this parameter or not.
 
 #### ScriptVariables
 Will by default contain your database name (as provided in connectionstring) on key *DbName*. Otherwise empty. Any *$variable$* in your scripts will be replaced with matching values in the scriptVariables dictionary. Avoid using this unless you're okay with coupling your sql-scripts with GalacticWasteManagement. 
