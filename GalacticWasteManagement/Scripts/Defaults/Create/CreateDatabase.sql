@@ -1,5 +1,0 @@
-﻿IF(DB_ID(N'$DbName$') IS NULL)
-BEGIN
-    CREATE DATABASE [$DbName$]
-END
-

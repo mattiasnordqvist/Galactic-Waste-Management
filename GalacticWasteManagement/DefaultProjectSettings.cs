@@ -11,7 +11,7 @@ namespace GalacticWasteManagement
             new DefaultMigrationVersioning(),
             new List<IScriptProvider>
             {
-                new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(MigrationBase)), "Scripts.Defaults"),
+                new BuiltInScriptsScriptProvider(),
                 new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(T)), "Scripts")
             }){ }
     }

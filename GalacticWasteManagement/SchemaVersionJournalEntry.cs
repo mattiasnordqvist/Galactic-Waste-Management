@@ -8,7 +8,7 @@ namespace GalacticWasteManagement
         public string Name { get; set; }
         public DateTime Applied { get; set; }
         public string Version { get; set; }
-        public string Hashed { get; set; }
+        public string Hash { get; set; }
         public string Type { get; set; }
     }
 }

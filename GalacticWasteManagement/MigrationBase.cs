@@ -46,7 +46,7 @@ namespace GalacticWasteManagement
                 Logger.Log($"Executing script '{script.Name}'", "info");
                 using (var step = Output.MiniProfiler.Step(script.Name))
                 {
-                    await script.Apply(Connection, ScriptVariables);
+                    await script.ApplyAsync(Connection, ScriptVariables);
                 }
 
                 if (journal)
@@ -58,11 +58,11 @@ namespace GalacticWasteManagement
                         Type = type.ToString(),
                         Applied = DateTime.Now,
                         Version = nextVersion,
-                        Hashed = script.Hashed
+                        Hash = script.GetHash()
                     };
                     using (var step = Output.MiniProfiler.Step($"Journaling {script.Name}"))
                     {
-                        await Connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hashed) values (@Version, @Type, @Name, @Applied, @Hashed)", nextSchemaJournalVersion);
+                        await Connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hash) values (@Version, @Type, @Name, @Applied, @Hash)", nextSchemaJournalVersion);
                     }
 
                     lastVersion = nextSchemaJournalVersion;
@@ -148,9 +148,9 @@ namespace GalacticWasteManagement
         {
             var all = scripts.ToList();
             var @new = scripts.Where(x => !schema.Select(s => s.Name).Contains(x.Name)).ToList();
-            var changed = scripts.Join(schema, x => x.Name, x => x.Name, (x, y) => (x, y)).Where(x => x.x.Hashed != x.y.Hashed).ToList();//(s => schema.Any(n => n.Name == s.Name && n.Hashed != s.Hashed)).ToList();
+            var changed = scripts.Join(schema, x => x.Name, x => x.Name, (x, y) => (x, y)).Where(x => x.x.GetHash() != x.y.Hash).ToList();
             var removed = schema.Where(s => !scripts.Any(n => n.Name == s.Name)).ToList();
-            var unchanged = scripts.Join(schema, x => (x.Name, x.Hashed), x => (x.Name, x.Hashed), (x, y) => (x, y)).ToList();
+            var unchanged = scripts.Join(schema, x => (x.Name, x.GetHash()), x => (x.Name, x.Hash), (x, y) => (x, y)).ToList();
             return new SchemaComparison { All = all, New = @new, Changed = changed, Removed = removed, Unchanged = unchanged };
         }
 

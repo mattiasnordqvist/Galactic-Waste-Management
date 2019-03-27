@@ -1,27 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Dapper;
-using GalacticWasteManagement.Utilities;
-using JellyDust;
-using JellyDust.Dapper;
-
-namespace GalacticWasteManagement.Scripts.ScriptProviders
+﻿namespace GalacticWasteManagement.Scripts.ScriptProviders
 {
-    public class EmbeddedScript : IScript
+
+    public class EmbeddedScript : ScriptBase
     {
         private ResourceFile _resourceFile;
+        private ScriptType _type;
         private string _cachedContent;
         private string _cachedHashedContent;
 
         public EmbeddedScript(ResourceFile resourceFile, ScriptType type)
         {
             _resourceFile = resourceFile;
-            Type = type;
+            _type = type;
         }
 
-        public string Name => _resourceFile.ResourceKey;
-
-        public string Content
+        public override string Sql
         {
             get
             {
@@ -33,29 +26,8 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
             }
         }
 
+        public override string Name => _resourceFile.ResourceKey;
 
-        public string Hashed
-        {
-            get
-            {
-                if (_cachedHashedContent == null)
-                {
-                    _cachedHashedContent = Hashing.CreateHash(Content);
-                }
-                return _cachedHashedContent;
-            }
-        }
-
-        public ScriptType Type { get; private set; }
-
-        public async Task Apply(IConnection connection, Dictionary<string, string> scriptVariables)
-        {
-            var batches = ScriptUtilities.SplitInBatches(Content);
-
-            foreach (var batch in batches)
-            {
-                await connection.ExecuteScalarAsync(ScriptUtilities.ReplaceTokens(batch, scriptVariables));
-            }
-        }
+        public override ScriptType Type => _type;
     }
 }

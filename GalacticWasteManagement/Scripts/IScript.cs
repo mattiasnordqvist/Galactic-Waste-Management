@@ -7,9 +7,8 @@ namespace GalacticWasteManagement.Scripts
     public interface IScript
     {
         string Name { get; }
-        string Content { get; }
-        string Hashed { get; }
+        string GetHash();
         ScriptType Type { get; }
-        Task Apply(IConnection connection, Dictionary<string, string> scriptVariables);
+        Task ApplyAsync(IConnection connection, Dictionary<string, string> scriptVariables);
     }
 }

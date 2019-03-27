@@ -1,4 +1,8 @@
-﻿
+﻿namespace GalacticWasteManagement.Scripts.ScriptProviders
+{
+    public class DropSchema : ScriptBase
+    {
+        public override string Sql => @"
 declare @n char(1)
 set @n = char(10)
 
@@ -41,3 +45,10 @@ from sys.types
 where is_user_defined = 1
 
 exec sp_executesql @stmt
+";
+
+        public override string Name => nameof(DropSchema);
+
+        public override ScriptType Type => ScriptType.Drop;
+    }
+}

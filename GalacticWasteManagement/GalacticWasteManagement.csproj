@@ -10,18 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Scripts\Defaults\Create\CreateDatabase.sql" />
-    <None Remove="Scripts\Defaults\Drop\DropSchema.sql" />
-    <None Remove="Scripts\Defaults\FirstRun\SchemaVersionJournal.sql" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\Defaults\Create\CreateDatabase.sql" />
-    <EmbeddedResource Include="Scripts\Defaults\Drop\DropSchema.sql" />
-    <EmbeddedResource Include="Scripts\Defaults\FirstRun\SchemaVersionJournal.sql" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ArtisticPastelPainter" Version="0.6.0" />
     <PackageReference Include="Dapper" Version="1.60.1" />
     <PackageReference Include="Honestly" Version="3.0.0" />

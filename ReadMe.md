@@ -66,7 +66,7 @@ You can change the versioning strategy by creating your own implementation of *I
 By default, scripts are read from *.sql*-files located in two different locations. The first location is part of the GalacticWastePackage itself, and you will never see them. These are scripts for creating the database, dropping schema and creating the SchemaVersionJournal table. The other script are by default read from the assembly that contains the class you use as type parameter in  *GalacticWasteManager.Create*. You can create and provide your own *IScriptProvider*s. If you still want to create the defaults, this is what they look like.
 
 ```csharp
-new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(MigrationBase)), "Scripts.Defaults"),
+new BuiltInScriptsScriptProvider(),
 new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(T)), "Scripts")
 ```
 
