@@ -14,7 +14,6 @@ namespace GalacticWasteManagement
         public static Func<GalacticWasteManager, IConnection, ITransaction, IMigration> Factory = (gwm, c, t) => new GreenFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t);
         public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction) : base(projectSettings, logger, output, connection, transaction)
         {
-            AllowCleanSchema = true;
             AllowCreate = true;
             AllowDrop = true;
         }
@@ -34,8 +33,7 @@ namespace GalacticWasteManagement
                 await CreateSafe();
                 dbCreated = true;
                 dbExists = true;
-                Logger.Log("Creating table for schema versioning.", "info");
-                await FirstRun();
+                isClean = true;
                 hasCleaned = true;
                 if (cleanRequested)
                 {
@@ -44,14 +42,24 @@ namespace GalacticWasteManagement
                 }
             }
 
-            Connection.DbConnection.ChangeDatabase(DatabaseName);
-            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
             if (cleanRequested && !dbCreated)
             {
                 Logger.Log($"Cleaning database '{DatabaseName}' because parameter 'Clean' was set.", "info");
-                await CleanSchemaSafe();
+                await DropSafe();
+                isClean = true;
                 hasCleaned = true;
             }
+
+            Connection.DbConnection.ChangeDatabase(DatabaseName);
+            if (dbCreated || hasCleaned || !await SchemaVersionJournalExists())
+            {
+                Logger.Log("Creating table for schema versioning.", "info");
+                await Initialize();
+            }
+
+           
+            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
+        
             if (GetScripts(ScriptType.Migration).Any())
             {
                 Logger.Log("Scripts found in Migration folder. No scripts should exist in Migration folder when doing Green Field development.", "warning");
@@ -67,7 +75,8 @@ namespace GalacticWasteManagement
                 comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any())
             {
                 Logger.Log("Changed or removed scripts in vNext or Seed. Cleaning schema.", "important");
-                await CleanSchemaSafe();
+                await DropSafe();
+                await Initialize();
                 hasCleaned = true;
                 Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
                 await RunScripts(comparisonVNext.All, "vNext", ScriptType.vNext, true);

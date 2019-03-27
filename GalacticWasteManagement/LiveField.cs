@@ -23,7 +23,7 @@ namespace GalacticWasteManagement
             {
                 Logger.Log($"No '{DatabaseName}' database found. It will be created.", "warning");
                 await CreateSafe();
-                await FirstRun();
+                await Initialize();
             }
 
             Connection.DbConnection.ChangeDatabase(DatabaseName);

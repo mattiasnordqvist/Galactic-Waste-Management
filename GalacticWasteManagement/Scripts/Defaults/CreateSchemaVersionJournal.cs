@@ -4,7 +4,7 @@
     {
         public override string Name => nameof(CreateSchemaVersionJournal);
 
-        public override ScriptType Type => ScriptType.FirstRun;
+        public override ScriptType Type => ScriptType.Initialize;
 
         public override string Sql => @"
 IF OBJECT_ID(N'dbo.SchemaVersionJournal', N'U') IS NULL BEGIN

@@ -10,7 +10,7 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
             {
                 yield return new CreateDatabase();
             }
-            if (scriptType == ScriptType.FirstRun)
+            if (scriptType == ScriptType.Initialize)
             {
                 yield return new CreateSchemaVersionJournal();
             }

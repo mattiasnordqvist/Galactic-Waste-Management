@@ -6,7 +6,6 @@
         private ResourceFile _resourceFile;
         private ScriptType _type;
         private string _cachedContent;
-        private string _cachedHashedContent;
 
         public EmbeddedScript(ResourceFile resourceFile, ScriptType type)
         {

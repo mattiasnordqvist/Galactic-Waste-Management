@@ -21,7 +21,6 @@ namespace GalacticWasteManagement
         protected ITransaction Transaction { get; }
 
 
-        protected bool AllowCleanSchema { get; set; } = false;
         protected bool AllowDrop { get; set; } = false;
         protected bool AllowCreate { get; set; } = false;
         public string DatabaseName { get; set; }
@@ -104,18 +103,11 @@ namespace GalacticWasteManagement
                 Connection.DbConnection.ChangeDatabase(currentDb);
             }
         }
-
-        protected async Task CleanSchemaSafe()
+        public async Task<bool> SchemaVersionJournalExists()
         {
-            if (!AllowCleanSchema)
-            {
-                Logger.Log($"Cleaning schema in current field is prohibited!", "warning");
-            }
-
-            Logger.Log($"Cleaning '{DatabaseName}' database schema.", "important");
-            await DropSafe();
-            await FirstRun();
+            return (await Connection.QueryFirstOrDefaultAsync<int?>("SELECT OBJECT_ID(N'dbo.SchemaVersionJournal', N'U')")).HasValue;
         }
+        
 
         protected Task DropSafe()
         {
@@ -139,9 +131,9 @@ namespace GalacticWasteManagement
             return RunScripts(GetScripts(ScriptType.Create), null, null, false, "master");
         }
 
-        protected Task FirstRun()
+        protected Task Initialize()
         {
-            return RunScripts(GetScripts(ScriptType.FirstRun), null, null, false);
+            return RunScripts(GetScripts(ScriptType.Initialize), null, null, false);
         }
 
         protected static SchemaComparison Compare(IEnumerable<IScript> scripts, IEnumerable<SchemaVersionJournalEntry> schema)

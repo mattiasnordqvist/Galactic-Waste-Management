@@ -7,7 +7,7 @@
         Seed = 2,
         Drop = 3,
         Create = 4,
-        FirstRun = 5,
+        Initialize = 5,
         vNext = 6,
         Migration = 7
     }
