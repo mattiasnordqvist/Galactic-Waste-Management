@@ -52,10 +52,10 @@ GalacticWasteManager continuosly tell you what it is doing through an *ILogger*.
 GalacticWasteManager can output all relevant sql that was run after a migration is complete. Change through *wasteManager.Output*. Default is *NullOutput*. Implement *IOutput* interface to create your own. GalacticWasteManager ships with a *FileOuput* that you can use. 
 
 ### Project Settings
-Project settings are supposed to stay basically the same through your whole project. You decide what they should be once, and then you leave them at that. They do not change when switching environments. These settings can only be set through an overload of the  *GalacticWasteManager.Create* method.
+Project settings are supposed to stay basically the same through your whole project. You decide what they should be once, and then you leave them at that. They do not change when switching environments. Changing them can wreak havoc to your project if you don't know what you're doing. These settings can only be set through an overload of the  *GalacticWasteManager.Create* method.
 
 #### Versioning 
-Default versioning is *Major.Minor*. Migration scripts related to a release are expected to live in a folder with the a version conforming to this standard as its name (i.e. 4.2, or 12.3), under the *Scripts.Migration* folder. Scripts are not versioned _below_ *minor*. Scripts with the same version are executed in alphabetical order. In the schema journal, you can look at the *Id* or *Applied* column if you want to know which order scripts were run.
+Default versioning is *Major.Minor*. Migration scripts related to a release are expected to live in a folder with a name conforming to this standard (i.e. 4.2, or 12.3), under the *Scripts.Migration* folder. Scripts are not versioned _below_ *minor*. Scripts with the same version are executed in alphabetical order. In the schema journal, you can look at the *Id* or *Applied* column if you want to know which order scripts were run.
 
 You can change the versioning strategy by creating your own implementation of *IMigrationVersioning*.
 
@@ -73,15 +73,15 @@ A *IScriptProvider* can return any implementation of *IScript*. There are some r
 These settings are typically provided through *wasteManager.Update()* each time you do a migration.
 
 #### Mode (required)
-Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. *GreenField* is for when you are developing on a brand new database. *LiveField* is for your production environment, no matter if the database is new or not. *BrownField* is for developing after your first release. You can create your own migration strategies as well. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*, or you can supply it directly to the Update-method if you don't want it easily configurable. Details the different modes and how you can implement your own further down. 
+Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. *GreenField* is for when you are developing on a brand new database. *LiveField* is for your production environment, no matter if the database is new or not. *BrownField* is for developing after your first release. You can create your own migration strategies as well. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*, or you can supply it directly to the Update-method if you don't want it easily configurable. Details on the different modes and how you can implement your own further down. 
 
 #### Clean
-Default *false*. Instructs migrator to clean schema and start anew. There are situations when schema can be cleaned even though this settings is *false*, and there are also situations where cleaning schema is not appropriate. It us up to the current mode to honor this parameter or not.
+Defaults to *false*. Instructs migrator to clean schema and start anew. There are situations when schema can be cleaned even though this settings is *false*, and there are also situations where cleaning schema is not appropriate. It us up to the current mode to honor this parameter or not.
 
 #### ScriptVariables
 Will by default contain your database name (as provided in connectionstring) on key *DbName*. Otherwise empty. Any *$variable$* in your scripts will be replaced with matching values in the scriptVariables dictionary. Avoid using this unless you're okay with coupling your sql-scripts with GalacticWasteManagement. 
 
-## Implement you own *IScript*s and *IScriptProvider* (Also ScriptTypes)
+## Implement you own *IScript*s, *IScriptProvider*s and *IScriptType*s
 // TODO Document
 
 ## Implement your own Mode
@@ -90,7 +90,7 @@ Will by default contain your database name (as provided in connectionstring) on 
 ## Implement your own VersioningStrategy
 // TODO Document
 
-## How to change defaults (like drop/create/initialize)
+## How to do minor tweaks to the defaults (like drop/create/initialize)
 // TODO Document
 
 ## Creating a new migrations release (going to production and brownfield)
@@ -209,6 +209,6 @@ LiveField mode works like Green Field with a few exceptions.
 
 Seed-scripts, Drop-scripts and vNext-scripts are not run.
 Create and FirstRun will be run if database does not exist.
-Migration-scripts are run instead of vNext-scripts. All migrationscripts not run, that have a higher version than current highest version will be run. 
+Migration-scripts are run instead of vNext-scripts. All migrationscripts not run, that have a higher version than current highest version will be run. (and they should be run in version-order, then alphabetically)
 Any other scripts in the Migration folder, changed, added or removed, will generate warnings.
 RunIfChanged-scripts will be run as in GreenField.
