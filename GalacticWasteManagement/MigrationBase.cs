@@ -39,7 +39,13 @@ namespace GalacticWasteManagement
         {
             Connection.DbConnection.ChangeDatabase(database ?? DatabaseName);
             var lastVersion = await GetLastSchemaVersionJournalEntry();
-            foreach (var script in scripts)
+            var orderedScripts = scripts.OrderBy(x => x.Type.IsJournaled);
+            if (version == null)
+            {
+                orderedScripts = orderedScripts.ThenBy(x => x, ProjectSettings.MigrationVersioning.ScriptComparer);
+            }
+            orderedScripts = orderedScripts.ThenBy(x => x.Name);
+            foreach (var script in orderedScripts)
             {
                 Logger.Log($"Executing script '{script.Name}'", "info");
                 using (var step = Output.MiniProfiler.Step(script.Name))
@@ -108,7 +114,7 @@ SELECT NULL
         {
             return (await Connection.QueryFirstOrDefaultAsync<int?>("SELECT OBJECT_ID(N'dbo.SchemaVersionJournal', N'U')")).HasValue;
         }
-        
+
 
         protected Task DropSafe()
         {

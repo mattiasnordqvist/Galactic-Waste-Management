@@ -28,7 +28,7 @@ namespace GalacticWasteManagement.Scripts
             return $"{version.Major}.{version.Minor}";
         }
 
-        public override DefaultVersion FromString(string version)
+        public override DefaultVersion FromVersionString(string version)
         {
             var match = versionRegex.Match(version);
             return new DefaultVersion

@@ -1,12 +1,13 @@
-﻿namespace GalacticWasteManagement.Scripts
+﻿using System.Collections.Generic;
+
+namespace GalacticWasteManagement.Scripts
 {
 
-    public interface IMigrationVersioning
+    public interface IMigrationVersioning 
     {
+        IComparer<IScript> ScriptComparer { get; }
         string DetermineVersion(IScript script);
-
-        int Compare(string versionX, string versionY);
-
-        int Compare(IScript versionX, string versionY);
+        int Compare(IScript script, string versionString);
+        int Compare(string versionString, string otherVersionString);
     }
 }
