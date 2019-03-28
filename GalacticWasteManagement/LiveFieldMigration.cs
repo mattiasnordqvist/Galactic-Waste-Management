@@ -1,9 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
-using GalacticWasteManagement.Scripts;
 using JellyDust;
 
 namespace GalacticWasteManagement
@@ -35,11 +33,11 @@ namespace GalacticWasteManagement
             // if any changed/removed/added on earlier versions, warn
             // all added on current version and onward should be new, run them
             var lastJournalEntry = await GetLastSchemaVersionJournalEntry();
-            var v = lastJournalEntry != null ? new VersionStringForJournaling(lastJournalEntry.Version) : null;
+            var v = lastJournalEntry != null ? new Scripts.Version(lastJournalEntry.Version) : null;
             var olderScripts = scripts.Where(s => v != null && ProjectSettings.MigrationVersioning.Compare(s, v) <= 0);
             var newerScripts = scripts.Where(s => v == null || ProjectSettings.MigrationVersioning.Compare(s, v) > 0);
-            var olderSchema = schema.Where(s => v != null && ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) <= 0);
-            var newerSchema = schema.Where(s => v == null || ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) > 0);
+            var olderSchema = schema.Where(s => (v != null && ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) <= 0));
+            var newerSchema = schema.Where(s => (v == null || ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) > 0));
             var lastVersion = lastJournalEntry;
             var olderComparison = Compare(olderScripts, olderSchema);
             if (olderComparison.Removed.Any() || olderComparison.Changed.Any() || olderComparison.New.Any())

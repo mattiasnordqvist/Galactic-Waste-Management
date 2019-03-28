@@ -5,9 +5,9 @@ namespace GalacticWasteManagement.Scripts
 
     public interface IMigrationVersioning 
     {
-        IComparer<IScript> ScriptComparer { get; }
-        VersionStringForJournaling VersionStringForJournaling(IScript script);
-        int Compare(IScript script, VersionStringForJournaling versionStringForJournaling);
-        int Compare(VersionStringForJournaling versionStringForJournaling, VersionStringForJournaling otherVersionStringForJournaling);
+        IComparer<Version> VersionComparer { get; }
+        Version VersionStringForJournaling(IScript script);
+        int Compare(IScript script, Version versionStringForJournaling);
+        int Compare(Version versionStringForJournaling, Version otherVersionStringForJournaling);
     }
 }

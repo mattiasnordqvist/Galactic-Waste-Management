@@ -1,8 +1,8 @@
 ﻿namespace GalacticWasteManagement.Scripts
 {
-    public class VersionStringForJournaling
+    public class Version
     {
-        public VersionStringForJournaling(string value)
+        public Version(string value)
         {
             Value = value;
         }

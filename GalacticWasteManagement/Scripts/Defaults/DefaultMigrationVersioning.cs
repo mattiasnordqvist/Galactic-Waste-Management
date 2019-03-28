@@ -23,12 +23,12 @@ namespace GalacticWasteManagement.Scripts
             return version.CompareTo(otherVersion);
         }
 
-        public override VersionStringForJournaling ToVersionStringForJournaling(DefaultVersion version)
+        public override Version ToVersionStringForJournaling(DefaultVersion version)
         {
-            return new VersionStringForJournaling($"{version.Major}.{version.Minor}");
+            return new Version($"{version.Major}.{version.Minor}");
         }
 
-        public override DefaultVersion FromVersionStringForJournaling(VersionStringForJournaling version)
+        public override DefaultVersion FromVersionStringForJournaling(Version version)
         {
             var match = versionRegex.Match(version.Value);
             return new DefaultVersion
