@@ -16,24 +16,23 @@ namespace GalacticWasteManagement
         protected IProjectSettings ProjectSettings { get; }
         protected ILogger Logger { get; }
         public IOutput Output { get; }
-
         protected IConnection Connection { get; }
         protected ITransaction Transaction { get; }
-
-
         protected bool AllowDrop { get; set; } = false;
         protected bool AllowCreate { get; set; } = false;
         public string DatabaseName { get; set; }
 
         public Dictionary<string, string> ScriptVariables { get; set; }
+        public string Name { get; }
 
-        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction)
+        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction, string name)
         {
             Logger = logger;
             Output = output;
             Connection = connection;
             Transaction = transaction;
             ProjectSettings = projectSettings;
+            Name = name;
         }
 
         protected async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, string version, ScriptType? type, bool journal = true, string database = null)

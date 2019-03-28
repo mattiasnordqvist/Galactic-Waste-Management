@@ -9,9 +9,7 @@ namespace GalacticWasteManagement
 {
     public class LiveFieldMigration : MigrationBase
     {
-        public static Func<GalacticWasteManager, IConnection, ITransaction, IMigration> Factory = (gwm, c, t) => new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, c, t);
-
-        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction) : base(projectSettings, logger, output, connection, transaction)
+        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction, string name = "LiveField") : base(projectSettings, logger, output, connection, transaction, name)
         {
             AllowCreate = true;
         }

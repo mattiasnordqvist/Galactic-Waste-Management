@@ -8,6 +8,7 @@ using JellyDust;
 
 namespace GalacticWasteManagement
 {
+    // Galactic Waste Manager almost looks like IoC-container, doesn't it? Maybe it can be replaced.
     public class GalacticWasteManager : IGalacticWasteManager
     {
         public IProjectSettings ProjectSettings { get; private set; }
@@ -20,10 +21,12 @@ namespace GalacticWasteManagement
 
         static GalacticWasteManager()
         {
+            var greenfield = new GreenFieldMigrationFactory();
+            var liveField = new LiveFieldMigrationFactory();
             MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> {
-                    {"GreenField", GreenFieldMigration.Factory },
-                    {"LiveField", LiveFieldMigration.Factory }
-                };
+                { greenfield.Name, greenfield.Create },
+                { liveField.Name, liveField.Create }
+            };
         }
 
         protected GalacticWasteManager() { }
@@ -45,6 +48,7 @@ namespace GalacticWasteManagement
                 var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
                 migrator.DatabaseName = DatabaseName;
                 migrator.ScriptVariables = variables;
+                Logger.Log($"Running {migrator.Name} mode", "important");
                 await migrator.ManageWaste(clean);
                 uow.Commit();
                 Logger.Log("Galactic waste has been managed!", "success");
