@@ -5,13 +5,10 @@ namespace GalacticWasteManagement.Scripts
 {
     public abstract class MigrationVersioningBase : IMigrationVersioning
     {
-        public int Compare(IScript script, Version version) => Compare(Version(script), version);
-
-
-        public abstract int Compare(Version version, Version otherVersion);
+        public int Compare(Version version, Version otherVersion) => VersionComparer.Compare(version, otherVersion);
 
         /// <summary>
-        /// Return a comparer that can compare if a version comes before or after an other version.
+        /// Return a new comparer that can compare if a version comes before or after another version.
         /// </summary>
         public abstract IComparer<Version> VersionComparer { get; }
 
@@ -25,7 +22,6 @@ namespace GalacticWasteManagement.Scripts
 
     public abstract class CustomVersionMigrationVersioningBase<TCustomVersion> : MigrationVersioningBase  where TCustomVersion : IComparable<TCustomVersion>
     {
-        public override int Compare(Version version, Version otherVersion) => VersionComparer.Compare(version, otherVersion);
         public override IComparer<Version> VersionComparer => new InternalVersionComparer<TCustomVersion>(x => FromVersion(x));
         public abstract TCustomVersion ToCustomVersion(IScript script);
         public abstract Version ToVersion(TCustomVersion version);

@@ -7,6 +7,5 @@ namespace GalacticWasteManagement.Scripts
     {
         IComparer<Version> VersionComparer { get; }
         Version Version(IScript script);
-        int Compare(IScript script, Version otherVersion);
     }
 }

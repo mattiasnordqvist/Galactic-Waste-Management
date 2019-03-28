@@ -34,8 +34,8 @@ namespace GalacticWasteManagement
             // all added on current version and onward should be new, run them
             var lastJournalEntry = await GetLastSchemaVersionJournalEntry();
             var v = lastJournalEntry != null ? new Scripts.Version(lastJournalEntry.Version) : null;
-            var olderScripts = scripts.Where(s => v != null && ProjectSettings.MigrationVersioning.Compare(s, v) <= 0);
-            var newerScripts = scripts.Where(s => v == null || ProjectSettings.MigrationVersioning.Compare(s, v) > 0);
+            var olderScripts = scripts.Where(s => v != null && ProjectSettings.MigrationVersioning.Compare(ProjectSettings.MigrationVersioning.Version(s), v) <= 0);
+            var newerScripts = scripts.Where(s => v == null || ProjectSettings.MigrationVersioning.Compare(ProjectSettings.MigrationVersioning.Version(s), v) > 0);
             var olderSchema = schema.Where(s => (v != null && ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) <= 0));
             var newerSchema = schema.Where(s => (v == null || ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) > 0));
             var lastVersion = lastJournalEntry;
