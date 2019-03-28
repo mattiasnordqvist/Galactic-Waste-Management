@@ -55,7 +55,7 @@ namespace GalacticWasteManagement
 
                 if (script.Type.IsJournaled)
                 {
-                    var nextVersion = version ?? ProjectSettings.MigrationVersioning.DetermineVersion(script);
+                    var nextVersion = version ?? ProjectSettings.MigrationVersioning.VersionStringForJournaling(script).Value;
                     var nextSchemaJournalVersion = new SchemaVersionJournalEntry
                     {
                         Name = script.Name,

@@ -1,4 +1,5 @@
 ﻿using System;
+using GalacticWasteManagement.Scripts;
 
 namespace GalacticWasteManagement
 {
@@ -10,5 +11,6 @@ namespace GalacticWasteManagement
         public string Version { get; set; }
         public string Hash { get; set; }
         public string Type { get; set; }
+        public VersionStringForJournaling VersionStringForJournaling { get { return new VersionStringForJournaling(Version); } }
     }
 }
