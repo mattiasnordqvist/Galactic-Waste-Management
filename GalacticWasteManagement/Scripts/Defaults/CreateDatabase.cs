@@ -4,7 +4,7 @@
     {
         public override string Name => nameof(CreateDatabase);
 
-        public override ScriptType Type => ScriptType.Create;
+        public override IScriptType Type => ScriptType.Create;
 
         public override string Sql => @"
 IF(DB_ID(N'$DbName$') IS NULL)

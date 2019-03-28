@@ -32,6 +32,7 @@ namespace GalacticWasteManagement.Scripts
 
         public abstract string Sql { get; }
         public abstract string Name { get; }
-        public abstract ScriptType Type { get; }
+        public abstract IScriptType Type { get; }
+
     }
 }

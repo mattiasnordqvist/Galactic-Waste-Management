@@ -8,7 +8,7 @@ namespace GalacticWasteManagement.Scripts
     {
         string Name { get; }
         string GetHash();
-        ScriptType Type { get; }
+        IScriptType Type { get; }
         Task ApplyAsync(IConnection connection, Dictionary<string, string> scriptVariables);
     }
 }

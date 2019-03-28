@@ -4,7 +4,7 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
 {
     public class BuiltInScriptsScriptProvider : IScriptProvider
     {
-        public IEnumerable<IScript> GetScripts(ScriptType scriptType)
+        public IEnumerable<IScript> GetScripts(IScriptType scriptType)
         {
             if(scriptType == ScriptType.Create)
             {

@@ -4,10 +4,10 @@
     public class EmbeddedScript : ScriptBase
     {
         private ResourceFile _resourceFile;
-        private ScriptType _type;
+        private IScriptType _type;
         private string _cachedContent;
 
-        public EmbeddedScript(ResourceFile resourceFile, ScriptType type)
+        public EmbeddedScript(ResourceFile resourceFile, IScriptType type)
         {
             _resourceFile = resourceFile;
             _type = type;
@@ -27,6 +27,6 @@
 
         public override string Name => _resourceFile.ResourceKey;
 
-        public override ScriptType Type => _type;
+        public override IScriptType Type => _type;
     }
 }

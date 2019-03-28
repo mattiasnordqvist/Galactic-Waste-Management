@@ -35,10 +35,10 @@ namespace GalacticWasteManagement
             Name = name;
         }
 
-        protected async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, string version, ScriptType? type, bool journal = true, string database = null)
+        protected async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, string version, string database = null)
         {
             Connection.DbConnection.ChangeDatabase(database ?? DatabaseName);
-            var lastVersion = journal ? await GetLastSchemaVersionJournalEntry() : null;
+            var lastVersion = await GetLastSchemaVersionJournalEntry();
             foreach (var script in scripts)
             {
                 Logger.Log($"Executing script '{script.Name}'", "info");
@@ -47,13 +47,13 @@ namespace GalacticWasteManagement
                     await script.ApplyAsync(Connection, ScriptVariables);
                 }
 
-                if (journal)
+                if (script.Type.IsJournaled)
                 {
                     var nextVersion = version ?? ProjectSettings.MigrationVersioning.DetermineVersion(script);
                     var nextSchemaJournalVersion = new SchemaVersionJournalEntry
                     {
                         Name = script.Name,
-                        Type = type.ToString(),
+                        Type = script.Type.Name,
                         Applied = DateTime.Now,
                         Version = nextVersion,
                         Hash = script.GetHash()
@@ -70,24 +70,26 @@ namespace GalacticWasteManagement
 
         }
 
-        public async Task<List<SchemaVersionJournalEntry>> GetSchema(string schemaVersion = null, ScriptType? type = null)
+        public async Task<List<SchemaVersionJournalEntry>> GetSchema(string schemaVersion = null, IScriptType type = null)
         {
             return (await Connection.QueryAsync<SchemaVersionJournalEntry>($@"
                 SELECT * FROM (
-                    SELECT * FROM SchemaVersionJournal WHERE [Type] <> '{nameof(ScriptType.RunIfChanged)}'
+                    SELECT * FROM SchemaVersionJournal WHERE [Type] <> '{ScriptType.RunIfChanged.Name}'
                     UNION ALL
                     SELECT * FROM SchemaVersionJournal WHERE Id IN (
-                        SELECT Max(Id) FROM SchemaVersionJournal WHERE [Type] = '{nameof(ScriptType.RunIfChanged)}' GROUP BY Name
+                        SELECT Max(Id) FROM SchemaVersionJournal WHERE [Type] = '{ScriptType.RunIfChanged.Name}' GROUP BY Name
                     )
                 ) _
-                WHERE ([Version] = @version OR @version IS NULL) AND ([Type] = @type OR @type IS NULL)", new { type = type?.ToString(), version = schemaVersion })
+                WHERE ([Version] = @version OR @version IS NULL) AND ([Type] = @type OR @type IS NULL)", new { type = type?.Name, version = schemaVersion })
             ).ToList();
         }
 
-        public async Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry()
-        {
-            return (await Connection.QueryAsync<SchemaVersionJournalEntry>("SELECT TOP 1 * FROM SchemaVersionJournal ORDER BY Id DESC")).FirstOrDefault();
-        }
+        public async Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry() => (await Connection.QueryFirstOrDefaultAsync<SchemaVersionJournalEntry>(@"
+IF OBJECT_ID(N'dbo.SchemaVersionJournal', N'U') IS NOT NULL
+SELECT TOP 1 * FROM SchemaVersionJournal ORDER BY Id DESC
+ELSE 
+SELECT NULL
+"));
 
         public async Task<bool> DbExist()
         {
@@ -116,7 +118,7 @@ namespace GalacticWasteManagement
             }
 
             Logger.Log($"Dropping '{DatabaseName}' database schema.", "important");
-            return RunScripts(GetScripts(ScriptType.Drop), null, null, false);
+            return RunScripts(GetScripts(ScriptType.Drop), null);
         }
 
         protected Task CreateSafe()
@@ -127,12 +129,12 @@ namespace GalacticWasteManagement
             }
 
             Logger.Log($"Creating database '{DatabaseName}'.", "important");
-            return RunScripts(GetScripts(ScriptType.Create), null, null, false, "master");
+            return RunScripts(GetScripts(ScriptType.Create), "master");
         }
 
         protected Task Initialize()
         {
-            return RunScripts(GetScripts(ScriptType.Initialize), null, null, false);
+            return RunScripts(GetScripts(ScriptType.Initialize), null);
         }
 
         protected static SchemaComparison Compare(IEnumerable<IScript> scripts, IEnumerable<SchemaVersionJournalEntry> schema)

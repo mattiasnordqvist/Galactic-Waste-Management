@@ -49,6 +49,6 @@ exec sp_executesql @stmt
 
         public override string Name => nameof(DropSchema);
 
-        public override ScriptType Type => ScriptType.Drop;
+        public override IScriptType Type => ScriptType.Drop;
     }
 }

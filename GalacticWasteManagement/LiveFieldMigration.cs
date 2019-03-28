@@ -51,7 +51,7 @@ namespace GalacticWasteManagement
             if (newerComparison.New.Any())
             {
                 Logger.Log("New migration scripts were found and will be run.", "info");
-                lastVersion = await RunScripts(scripts, null, ScriptType.Migration);
+                lastVersion = await RunScripts(scripts, null);
             }
 
             if (GetScripts(ScriptType.vNext).Any())
@@ -65,8 +65,8 @@ namespace GalacticWasteManagement
             if (changedComparison.New.Any() || changedComparison.Changed.Any())
             {
                 Logger.Log("Found changed or added RunIfChanged-scripts.", "info");
-                await RunScripts(changedComparison.Changed.Select(x => x.script), lastVersion.Version, ScriptType.RunIfChanged);
-                await RunScripts(changedComparison.New, lastVersion.Version, ScriptType.RunIfChanged);
+                await RunScripts(changedComparison.Changed.Select(x => x.script), lastVersion.Version);
+                await RunScripts(changedComparison.New, lastVersion.Version);
             }
             else
             {

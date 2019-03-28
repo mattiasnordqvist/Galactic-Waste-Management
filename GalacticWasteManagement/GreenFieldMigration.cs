@@ -77,13 +77,13 @@ namespace GalacticWasteManagement
                 await Initialize();
                 hasCleaned = true;
                 Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonVNext.All, "vNext", ScriptType.vNext, true);
+                await RunScripts(comparisonVNext.All, "vNext");
             }
             else if (comparisonVNext.New.Any())
             {
                 Logger.Log("New migrations in vNext found", "info");
                 Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonVNext.New, "vNext", ScriptType.vNext);
+                await RunScripts(comparisonVNext.New, "vNext");
             }
             else
             {
@@ -96,8 +96,8 @@ namespace GalacticWasteManagement
             if (changedComparison.New.Any() || changedComparison.Changed.Any())
             {
                 Logger.Log("Found changed or added RunIfChanged-scripts.", "info");
-                await RunScripts(changedComparison.Changed.Select(x => x.script), "vNext", ScriptType.RunIfChanged);
-                await RunScripts(changedComparison.New, "vNext", ScriptType.RunIfChanged);
+                await RunScripts(changedComparison.Changed.Select(x => x.script), "vNext");
+                await RunScripts(changedComparison.New, "vNext");
             }
             else
             {
@@ -107,13 +107,13 @@ namespace GalacticWasteManagement
             if (hasCleaned && comparisonSeed.All.Any())
             {
                 Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonSeed.All, "Local", ScriptType.Seed);
+                await RunScripts(comparisonSeed.All, "Local");
             }
             else if (comparisonSeed.New.Any())
             {
                 Logger.Log("New seed scripts found", "info");
                 Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonSeed.New, "Local", ScriptType.Seed);
+                await RunScripts(comparisonSeed.New, "Local");
             }
             else
             {
