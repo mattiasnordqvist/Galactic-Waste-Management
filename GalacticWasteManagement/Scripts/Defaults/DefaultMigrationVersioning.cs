@@ -3,12 +3,12 @@
 namespace GalacticWasteManagement.Scripts
 {
 
-    public class DefaultMigrationVersioning : MigrationVersioningBase<DefaultVersion>
+    public class DefaultMigrationVersioning : CustomVersionMigrationVersioningBase<DefaultVersion>
     {
         private Regex embeddedScriptNameVersionRegexp = new Regex(@"\._(?<maj>\d{1,})\._(?<min>\d{1,})\.");
         private Regex versionRegex = new Regex(@"(?<maj>\d{1,})\.(?<min>\d{1,})");
 
-        public override DefaultVersion GetVersion(IScript script)
+        public override DefaultVersion ToCustomVersion(IScript script)
         {
             var match = embeddedScriptNameVersionRegexp.Match(script.Name);
             return new DefaultVersion
@@ -18,17 +18,14 @@ namespace GalacticWasteManagement.Scripts
             };
         }
 
-        public override int Compare(DefaultVersion version, DefaultVersion otherVersion)
-        {
-            return version.CompareTo(otherVersion);
-        }
+        
 
-        public override Version ToVersionStringForJournaling(DefaultVersion version)
+        public override Version ToVersion(DefaultVersion version)
         {
             return new Version($"{version.Major}.{version.Minor}");
         }
 
-        public override DefaultVersion FromVersionStringForJournaling(Version version)
+        public override DefaultVersion FromVersion(Version version)
         {
             var match = versionRegex.Match(version.Value);
             return new DefaultVersion

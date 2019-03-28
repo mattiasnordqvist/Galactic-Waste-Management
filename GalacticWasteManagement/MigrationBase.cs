@@ -42,7 +42,7 @@ namespace GalacticWasteManagement
             var orderedScripts = scripts.OrderBy(x => x.Type.IsJournaled);
             if (version == null)
             {
-                orderedScripts = orderedScripts.ThenBy(x => x.Type.IsJournaled ? ProjectSettings.MigrationVersioning.VersionStringForJournaling(x) : null, ProjectSettings.MigrationVersioning.VersionComparer);
+                orderedScripts = orderedScripts.ThenBy(x => x.Type.IsJournaled ? ProjectSettings.MigrationVersioning.Version(x) : null, ProjectSettings.MigrationVersioning.VersionComparer);
             }
             orderedScripts = orderedScripts.ThenBy(x => x.Name);
             foreach (var script in orderedScripts)
@@ -55,7 +55,7 @@ namespace GalacticWasteManagement
 
                 if (script.Type.IsJournaled)
                 {
-                    var nextVersion = version ?? ProjectSettings.MigrationVersioning.VersionStringForJournaling(script).Value;
+                    var nextVersion = version ?? ProjectSettings.MigrationVersioning.Version(script).Value;
                     var nextSchemaJournalVersion = new SchemaVersionJournalEntry
                     {
                         Name = script.Name,
