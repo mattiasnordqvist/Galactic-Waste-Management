@@ -129,7 +129,7 @@ SELECT NULL
             }
 
             Logger.Log($"Creating database '{DatabaseName}'.", "important");
-            return RunScripts(GetScripts(ScriptType.Create), "master");
+            return RunScripts(GetScripts(ScriptType.Create), null, "master");
         }
 
         protected Task Initialize()
