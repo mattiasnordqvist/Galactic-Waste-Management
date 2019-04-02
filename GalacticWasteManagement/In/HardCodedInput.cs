@@ -15,7 +15,7 @@ namespace GalacticWasteManagement
 
         public override Param<T> Required<T>(InputParam<T> inputParam)
         {
-            parameters[inputParam.Name] = new Param<T>(inputParam, default(T), false, this);
+            parameters[inputParam.Name] = new Param<T>(inputParam, default, false, this);
             return (Param<T>)parameters[inputParam.Name];
         }
 
