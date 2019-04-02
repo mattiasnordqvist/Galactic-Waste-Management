@@ -15,7 +15,7 @@ namespace GalacticWasteManagement
             AllowCreate = true;
             AllowDrop = true;
 
-            Clean = Input.Optional(new InputParam<bool>("clean", "force database to clean"), false);
+            Clean = Input.Optional(new InputBool("clean", "force database to clean"), false);
         }
 
         public Param<bool> Clean { get; }

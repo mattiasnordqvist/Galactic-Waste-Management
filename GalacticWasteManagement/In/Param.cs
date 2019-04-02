@@ -1,9 +1,11 @@
-﻿namespace GalacticWasteManagement
+﻿using System;
+
+namespace GalacticWasteManagement
 {
     public class Param<T>
     {
         internal InputParam<T> inputParam;
-        private readonly T defaultValue;
+        internal readonly T defaultValue;
         internal readonly bool optional;
         private readonly Input input;
 
@@ -22,14 +24,19 @@
             Value = InputValue<T>.Of(value);
         }
 
+        public void SetValueNull()
+        {
+            Value = InputValue<T>.Null;
+        }
+
         public T Get()
         {
             if(Value == null)
             {
-                input.Set(this);
+                input.TrySet(this);
             }
 
-            return Value.value;
+            return Value.HasValue ? Value.Value : defaultValue;
         }
     }
 }

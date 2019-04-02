@@ -3,8 +3,14 @@
 
     public abstract class Input
     {
-        public abstract Param<T> Optional<T>(InputParam<T> inputParam, T defaultValue);
-        public abstract Param<T> Required<T>(InputParam<T> inputParam);
-        public abstract void Set<T>(Param<T> param);
+        public Param<T> Optional<T>(InputParam<T> inputParam, T defaultValue)
+        {
+            return new Param<T>(inputParam, defaultValue, true, this);
+        }
+        public Param<T> Required<T>(InputParam<T> inputParam)
+        {
+            return new Param<T>(inputParam, default, false, this);
+        }
+        public abstract void TrySet<T>(Param<T> param);
     }
 }
