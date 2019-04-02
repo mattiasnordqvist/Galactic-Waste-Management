@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using GalacticWasteManagement.In;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
 using JellyDust;
@@ -34,7 +35,7 @@ namespace GalacticWasteManagement
         protected GalacticWasteManager() { }
 
 
-        public async Task Update(Func<GalacticWasteManager, IConnection, ITransaction, IMigration> migratorFactory, bool clean = false, Dictionary<string, string> scriptVariables = null)
+        public async Task Update(Func<GalacticWasteManager, IConnection, ITransaction, IMigration> migratorFactory, Dictionary<string, string> scriptVariables = null)
         {
             try
             {
@@ -65,17 +66,18 @@ namespace GalacticWasteManagement
                 throw;
             }
         }
-        public async Task Update(string mode, bool clean = false, Dictionary<string, string> scriptVariables = null)
+
+        public async Task Update(string mode, Dictionary<string, string> scriptVariables = null)
         {
-            await Update(MigratorFactories[mode], clean, scriptVariables);
+            await Update(MigratorFactories[mode], scriptVariables);
         }
 
-        public static GalacticWasteManager Create<T>(string connectionString, Input input)
+        public static GalacticWasteManager Create<T>(string connectionString, Dictionary<string, object> parameters = null)
         {
-            return Create(new DefaultProjectSettings<T>(), connectionString, input);
+            return Create(new DefaultProjectSettings<T>(), connectionString, parameters);
         }
 
-        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString, Input input)
+        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString, Dictionary<string, object> parameters = null)
         {
             if (projectSettings == null)
             {
@@ -95,7 +97,7 @@ namespace GalacticWasteManagement
                 DatabaseName = connectionStringBuilder.InitialCatalog,
                 Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
-                Input = input
+                Input = new HardCodedInput(parameters, new ConsoleInput(true)),
             };
 
             return gwm;

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GalacticWasteManagement
+﻿namespace GalacticWasteManagement
 {
     public class Param<T>
     {
