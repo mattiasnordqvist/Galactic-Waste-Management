@@ -14,8 +14,8 @@ namespace GalacticWasteManagement
         public IProjectSettings ProjectSettings { get; private set; }
         public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; }
         public string DatabaseName { get; private set; }
-
         public IOutput Output { get; set; }
+        public Input Input { get; set; }
         public ILogger Logger { get; set; }
         public static Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> MigratorFactories { get; private set; }
 
@@ -23,9 +23,11 @@ namespace GalacticWasteManagement
         {
             var greenfield = new GreenFieldMigrationFactory();
             var liveField = new LiveFieldMigrationFactory();
+            var brownField = new BrownFieldMigrationFactory();
             MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> {
                 { greenfield.Name, greenfield.Create },
-                { liveField.Name, liveField.Create }
+                { liveField.Name, liveField.Create },
+                { brownField.Name, brownField.Create }
             };
         }
 
@@ -34,25 +36,33 @@ namespace GalacticWasteManagement
 
         public async Task Update(Func<GalacticWasteManager, IConnection, ITransaction, IMigration> migratorFactory, bool clean = false, Dictionary<string, string> scriptVariables = null)
         {
-            var variables = scriptVariables ?? new Dictionary<string, string>();
-            variables.Add("DbName", DatabaseName);
-            ConnectionStringBuilder.InitialCatalog = "master";
-            // - But what if we can't connect to master?!
-            // - But what if we can't connect to db in connectionstring!?
-            // - But what if we just handle stuff accordingly?!
-
-            using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(ConnectionStringBuilder.ConnectionString, Output)))
+            try
             {
-                Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
-                Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
-                var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
-                migrator.DatabaseName = DatabaseName;
-                migrator.ScriptVariables = variables;
-                Logger.Log($"Running {migrator.Name} mode", "important");
-                await migrator.ManageWaste(clean);
-                uow.Commit();
-                Logger.Log("Galactic waste has been managed!", "success");
-                Output.Dump();
+                var variables = scriptVariables ?? new Dictionary<string, string>();
+                variables.Add("DbName", DatabaseName);
+                ConnectionStringBuilder.InitialCatalog = "master";
+                // - But what if we can't connect to master?!
+                // - But what if we can't connect to db in connectionstring!?
+                // - But what if we just handle stuff accordingly?!
+
+                using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(ConnectionStringBuilder.ConnectionString, Output)))
+                {
+                    Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
+                    Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
+                    var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
+                    migrator.DatabaseName = DatabaseName;
+                    migrator.ScriptVariables = variables;
+                    Logger.Log($"Running {migrator.Name} mode", "important");
+                    await migrator.ManageWaste();
+                    uow.Commit();
+                    Logger.Log("Galactic waste has been managed!", "success");
+                    Output.Dump();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, "error");
+                throw;
             }
         }
         public async Task Update(string mode, bool clean = false, Dictionary<string, string> scriptVariables = null)
@@ -60,12 +70,12 @@ namespace GalacticWasteManagement
             await Update(MigratorFactories[mode], clean, scriptVariables);
         }
 
-        public static GalacticWasteManager Create<T>(string connectionString)
+        public static GalacticWasteManager Create<T>(string connectionString, Input input)
         {
-            return Create(new DefaultProjectSettings<T>(), connectionString);
+            return Create(new DefaultProjectSettings<T>(), connectionString, input);
         }
 
-        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString)
+        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString, Input input)
         {
             if (projectSettings == null)
             {
@@ -85,6 +95,7 @@ namespace GalacticWasteManagement
                 DatabaseName = connectionStringBuilder.InitialCatalog,
                 Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
+                Input = input
             };
 
             return gwm;

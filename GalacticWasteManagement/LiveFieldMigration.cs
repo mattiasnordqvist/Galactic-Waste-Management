@@ -8,12 +8,12 @@ namespace GalacticWasteManagement
 {
     public class LiveFieldMigration : MigrationBase
     {
-        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction, string name = "LiveField") : base(projectSettings, logger, output, connection, transaction, name)
+        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, Input input, IConnection connection, ITransaction transaction, string name = "LiveField") : base(projectSettings, logger, output, input, connection, transaction, name)
         {
             AllowCreate = true;
         }
 
-        public override async Task ManageWaste(bool clean)
+        public override async Task ManageWaste()
         {
             var dbExists = await DbExist();
             if (!dbExists)
