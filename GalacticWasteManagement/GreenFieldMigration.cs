@@ -10,15 +10,19 @@ namespace GalacticWasteManagement
 {
     public class GreenFieldMigration : MigrationBase
     {
-        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IConnection connection, ITransaction transaction, string name = "GreenField") : base(projectSettings, logger, output, connection, transaction, name)
+        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, Input input, IConnection connection, ITransaction transaction, string name = "GreenField") : base(projectSettings, logger, output, input, connection, transaction, name)
         {
             AllowCreate = true;
             AllowDrop = true;
+
+            Clean = Input.Optional(new InputBool("clean", "force database to clean"), false);
         }
 
-        public override async Task ManageWaste(bool clean)
+        public Param<bool> Clean { get; }
+
+        public override async Task ManageWaste()
         {
-            var cleanRequested = clean;
+            var cleanRequested = Clean.Get();
             var hasCleaned = false;
             var isClean = Honestly.DontKnow;
 
