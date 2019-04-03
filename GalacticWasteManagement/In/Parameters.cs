@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace GalacticWasteManagement
 {
-
-    public class Parameters : ParametersBase
+    public class Parameters : IInput, IParameters
     {
         private Dictionary<string, object> values = new Dictionary<string, object>();
         private IInput input;
@@ -19,7 +18,16 @@ namespace GalacticWasteManagement
             this.input = input;
         }
 
-        public override void TrySet<T>(Param<T> param)
+        public Param<T> Optional<T>(InputParam<T> inputParam, T defaultValue)
+        {
+            return new Param<T>(inputParam, defaultValue, true, this);
+        }
+        public Param<T> Required<T>(InputParam<T> inputParam)
+        {
+            return new Param<T>(inputParam, default, false, this);
+        }
+
+        public void TrySet<T>(Param<T> param)
         {
             if (values.ContainsKey(param.inputParam.Name))
             {

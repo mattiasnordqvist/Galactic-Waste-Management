@@ -9,7 +9,6 @@ namespace GalacticWasteManagement
         string DatabaseName { get; set; }
         Dictionary<string, string> ScriptVariables { get; set; }
         Task ManageWaste();
-
-        Parameters Input { get; set; }
+        IParameters Parameters { get; set; }
     }
 }

@@ -16,7 +16,7 @@ namespace GalacticWasteManagement
         public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; }
         public string DatabaseName { get; private set; }
         public IOutput Output { get; set; }
-        public Parameters Input { get; set; }
+        public IParameters Parameters { get; set; }
         public ILogger Logger { get; set; }
         public static Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> MigratorFactories { get; private set; }
 
@@ -51,7 +51,7 @@ namespace GalacticWasteManagement
                     Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                     Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
                     var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
-                    migrator.Input.Supply(parameters);
+                    migrator.Parameters.Supply(parameters);
                     migrator.DatabaseName = DatabaseName;
                     migrator.ScriptVariables = variables;
                     Logger.Log($"Running {migrator.Name} mode", "important");
@@ -98,7 +98,7 @@ namespace GalacticWasteManagement
                 DatabaseName = connectionStringBuilder.InitialCatalog,
                 Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
-                Input = new Parameters(new ConsoleInput(true)),
+                Parameters = new Parameters(new ConsoleInput(true)),
             };
 
             return gwm;
