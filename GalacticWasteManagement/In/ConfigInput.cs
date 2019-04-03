@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 
 namespace GalacticWasteManagement.In
@@ -10,6 +11,11 @@ namespace GalacticWasteManagement.In
         public ConfigInput(IConfigurationSection configurationSection)
         {
             this.configurationSection = configurationSection;
+        }
+
+        public override void Supply(Dictionary<string, object> parameters)
+        {
+            throw new System.NotImplementedException();
         }
 
         public override void TrySet<T>(Param<T> param)

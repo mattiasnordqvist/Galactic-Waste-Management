@@ -14,9 +14,12 @@ namespace GalacticWasteManagement
             this.backUpInput = backUpInput;
         }
 
-        public void Set<T>(string paramName, T value)
+        public override void Supply(Dictionary<string, object> parameters)
         {
-            values[paramName] = value;
+            foreach(var p in parameters ?? new Dictionary<string, object>())
+            {
+                values[p.Key] = p.Value;
+            }
         }
 
         public override void TrySet<T>(Param<T> param)

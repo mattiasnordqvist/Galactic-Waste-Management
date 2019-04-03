@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GalacticWasteManagement.In
 {
@@ -9,6 +10,11 @@ namespace GalacticWasteManagement.In
         public ConsoleInput(bool optForDefaults = true)
         {
             this.optForDefaults = optForDefaults;
+        }
+
+        public override void Supply(Dictionary<string, object> parameters)
+        {
+            throw new NotImplementedException();
         }
 
         public override void TrySet<T>(Param<T> param)

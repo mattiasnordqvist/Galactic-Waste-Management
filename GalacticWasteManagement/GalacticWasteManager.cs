@@ -35,7 +35,7 @@ namespace GalacticWasteManagement
         protected GalacticWasteManager() { }
 
 
-        public async Task Update(Func<GalacticWasteManager, IConnection, ITransaction, IMigration> migratorFactory, Dictionary<string, string> scriptVariables = null)
+        public async Task Update(Func<GalacticWasteManager, IConnection, ITransaction, IMigration> migratorFactory, Dictionary<string, object> parameters = null, Dictionary<string, string> scriptVariables = null)
         {
             try
             {
@@ -51,6 +51,7 @@ namespace GalacticWasteManagement
                     Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                     Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
                     var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
+                    migrator.Input.Supply(parameters);
                     migrator.DatabaseName = DatabaseName;
                     migrator.ScriptVariables = variables;
                     Logger.Log($"Running {migrator.Name} mode", "important");
@@ -67,17 +68,17 @@ namespace GalacticWasteManagement
             }
         }
 
-        public async Task Update(string mode, Dictionary<string, string> scriptVariables = null)
+        public async Task Update(string mode, Dictionary<string, object> parameters = null, Dictionary<string, string> scriptVariables = null)
         {
-            await Update(MigratorFactories[mode], scriptVariables);
+            await Update(MigratorFactories[mode], parameters, scriptVariables);
         }
 
-        public static GalacticWasteManager Create<T>(string connectionString, Dictionary<string, object> parameters = null)
+        public static GalacticWasteManager Create<T>(string connectionString)
         {
-            return Create(new DefaultProjectSettings<T>(), connectionString, parameters);
+            return Create(new DefaultProjectSettings<T>(), connectionString);
         }
 
-        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString, Dictionary<string, object> parameters = null)
+        public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString)
         {
             if (projectSettings == null)
             {
@@ -97,7 +98,7 @@ namespace GalacticWasteManagement
                 DatabaseName = connectionStringBuilder.InitialCatalog,
                 Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
-                Input = new HardCodedInput(parameters, new ConsoleInput(true)),
+                Input = new HardCodedInput(new Dictionary<string, object>(), new ConsoleInput(true)),
             };
 
             return gwm;

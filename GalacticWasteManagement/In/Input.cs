@@ -1,4 +1,7 @@
-﻿namespace GalacticWasteManagement
+﻿using System;
+using System.Collections.Generic;
+
+namespace GalacticWasteManagement
 {
 
     public abstract class Input
@@ -12,5 +15,7 @@
             return new Param<T>(inputParam, default, false, this);
         }
         public abstract void TrySet<T>(Param<T> param);
+
+        public abstract void Supply(Dictionary<string, object> parameters);
     }
 }
