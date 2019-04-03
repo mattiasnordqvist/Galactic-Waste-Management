@@ -5,11 +5,11 @@
         internal InputParam<T> inputParam;
         internal readonly T defaultValue;
         internal readonly bool optional;
-        private readonly Input input;
+        private readonly IInput input;
 
         public InputValue<T> Value { get; internal set; }
 
-        public Param(InputParam<T> inputParam, T defaultValue, bool optional, Input input)
+        public Param(InputParam<T> inputParam, T defaultValue, bool optional, IInput input)
         {
             this.inputParam = inputParam;
             this.defaultValue = defaultValue;

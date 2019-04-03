@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace GalacticWasteManagement
+﻿namespace GalacticWasteManagement
 {
-
-    public abstract class Input
+    public abstract class ParametersBase : IInput
     {
         public Param<T> Optional<T>(InputParam<T> inputParam, T defaultValue)
         {
@@ -14,8 +10,7 @@ namespace GalacticWasteManagement
         {
             return new Param<T>(inputParam, default, false, this);
         }
-        public abstract void TrySet<T>(Param<T> param);
 
-        public abstract void Supply(Dictionary<string, object> parameters);
+        public abstract void TrySet<T>(Param<T> param);
     }
 }

@@ -16,7 +16,7 @@ namespace GalacticWasteManagement
         public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; }
         public string DatabaseName { get; private set; }
         public IOutput Output { get; set; }
-        public Input Input { get; set; }
+        public Parameters Input { get; set; }
         public ILogger Logger { get; set; }
         public static Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> MigratorFactories { get; private set; }
 
@@ -98,7 +98,7 @@ namespace GalacticWasteManagement
                 DatabaseName = connectionStringBuilder.InitialCatalog,
                 Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
-                Input = new HardCodedInput(new Dictionary<string, object>(), new ConsoleInput(true)),
+                Input = new Parameters(new ConsoleInput(true)),
             };
 
             return gwm;
