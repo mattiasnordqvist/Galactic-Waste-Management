@@ -16,7 +16,7 @@ namespace GalacticWasteManagement
         protected IProjectSettings ProjectSettings { get; }
         protected ILogger Logger { get; }
         public IOutput Output { get; }
-        public Input Input { get; }
+        public IParameters Parameters { get; set; }
         protected IConnection Connection { get; }
         protected ITransaction Transaction { get; }
         protected bool AllowDrop { get; set; } = false;
@@ -26,11 +26,11 @@ namespace GalacticWasteManagement
         public Dictionary<string, string> ScriptVariables { get; set; }
         public string Name { get; }
 
-        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, Input input, IConnection connection, ITransaction transaction, string name)
+        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name)
         {
             Logger = logger;
             Output = output;
-            Input = input;
+            Parameters = input;
             Connection = connection;
             Transaction = transaction;
             ProjectSettings = projectSettings;
@@ -75,6 +75,46 @@ namespace GalacticWasteManagement
                 }
             }
             return lastVersion;
+
+        }
+
+        private class DbFilesInfo
+        {
+            public string LogicalName { get; set; }
+            public string PhysicalName { get; set; }
+            public string TypeOfFile { get; set; }
+
+        }
+
+        public async Task Restore(string sourceBak, string mdfLogicalName = null, string mdfPhysicalName = null, string ldfLogicalName = null, string ldfPhysicalName = null)
+        {
+            var currentDb = Connection.DbConnection.Database;
+            Connection.DbConnection.ChangeDatabase("master");
+            try
+            {
+                var dbNames = await Connection.QueryAsync<DbFilesInfo>($@"
+SELECT f.name LogicalName,
+f.physical_name AS PhysicalName,
+f.type_desc TypeOfFile
+FROM sys.master_files f
+INNER JOIN sys.databases d ON d.database_id = f.database_id
+WHERE d.Name = '{currentDb}'");
+
+                var rows = dbNames.Single(x => x.TypeOfFile == "ROWS");
+                var log = dbNames.Single(x => x.TypeOfFile == "LOG");
+                
+                await Connection.ExecuteAsync($@"
+RESTORE DATABASE [{currentDb}]
+FROM DISK = '{sourceBak}'
+WITH REPLACE
+--,
+--WITH MOVE '{mdfLogicalName ?? rows.LogicalName}' TO '{mdfPhysicalName ?? rows.PhysicalName}',
+--MOVE '{ldfLogicalName ?? log.LogicalName}' TO '{ldfPhysicalName ?? log.PhysicalName}'");
+            }
+            finally
+            {
+                Connection.DbConnection.ChangeDatabase(currentDb);
+            }
 
         }
 
