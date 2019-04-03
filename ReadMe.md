@@ -75,8 +75,9 @@ These settings are typically provided through *wasteManager.Update()* each time 
 #### Mode (required)
 Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. *GreenField* is for when you are developing on a brand new database. *LiveField* is for your production environment, no matter if the database is new or not. *BrownField* is for developing after your first release. You can create your own migration strategies as well. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*, or you can supply it directly to the Update-method if you don't want it easily configurable. Details on the different modes and how you can implement your own further down. 
 
-#### Clean
-Defaults to *false*. Instructs migrator to clean schema and start anew. There are situations when schema can be cleaned even though this settings is *false*, and there are also situations where cleaning schema is not appropriate. It us up to the current mode to honor this parameter or not.
+~~#### Clean
+Defaults to *false*. Instructs migrator to clean schema and start anew. There are situations when schema can be cleaned even though this settings is *false*, and there are also situations where cleaning schema is not appropriate. It us up to the current mode to honor this parameter or not.~~
+_This changed in 0.10. Documentation is coming_
 
 #### ScriptVariables
 Will by default contain your database name (as provided in connectionstring) on key *DbName*. Otherwise empty. Any *$variable$* in your scripts will be replaced with matching values in the scriptVariables dictionary. Avoid using this unless you're okay with coupling your sql-scripts with GalacticWasteManagement. 
