@@ -55,6 +55,7 @@ namespace GalacticWasteManagement
                     }
                 }
             }
+            Console.WriteLine($"Using parameter: {param.inputParam.Name}={param.Value.Value}");
         }
 
         public void Supply(Dictionary<string, object> parameters)

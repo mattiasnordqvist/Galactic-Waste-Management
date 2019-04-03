@@ -16,7 +16,7 @@ namespace GalacticWasteManagement.In
         {
             if (param.optional && !configurationSection.GetChildren().Any(x => x.Key == param.inputParam.Name))
             {
-                param.SetValueNull();
+                param.SetValue(param.defaultValue);
             }
             else
             {
