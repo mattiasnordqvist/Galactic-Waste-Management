@@ -51,6 +51,48 @@ GalacticWasteManager continuosly tell you what it is doing through an *ILogger*.
 #### Output
 GalacticWasteManager can output all relevant sql that was run after a migration is complete. Change through *wasteManager.Output*. Default is *NullOutput*. Implement *IOutput* interface to create your own. GalacticWasteManager ships with a *FileOuput* that you can use. 
 
+#### Parameters
+You can configure how parameters are passed to the different modes (see below about modes). By default, parameters are supplied through
+Console window or through *Update*-method. Parameters passed through *Update* will not need to be passed through Console.
+Input is changed through .Parameters.SetInput(). *ConsoleInput* and *ConfigInput* is provided by Galactic Waste Manager. *MainArgsInput* is probably coming someday.
+
+##### ConsoleInput
+Since *ConsoleInput* uses the Console, it is not a very good input type when running migrations on server etc. In those cases, all parameters should be provided through the *Update*-method or a *ConfigInput*.
+
+##### ConfigInput
+Retrieves parameters from a ConfigSection. Typical usage might look like this:
+
+```csharp
+// appsettings.json
+{
+ "Migration": {
+    "Mode": "GreenField",
+    "ConnectionString": "Data Source=<instanceName>;Initial Catalog=<DbName>;Integrated Security=SSPI;",
+
+    "GreenField": {
+      "clean": true
+    },
+    "BrownField": {
+      "clean": false,
+      "source": "C:\\Program Files\\Microsoft SQL Server\\MSSQL13.MSSQLSERVER\\MSSQL\\Backup\\MyBackupFile.bak"
+    }
+  }
+}
+
+// your code
+var config = new ConfigurationBuilder()
+   .SetBasePath(Directory.GetCurrentDirectory())
+   .AddJsonFile("appsettings.json", optional: false)
+   .Build();
+var migrationConfig = config.GetSection("Migration");
+var mode = migrationConfig["Mode"];
+
+var input = new ConfigInput(migrationConfig.GetSection(mode));
+var wasteManager = GalacticWasteManager.Create<Program>(migrationConfig["ConnectionString"]);
+wasteManager.Parameters.SetInput(input);
+await wasteManager.Update(mode);
+```
+
 ### Project Settings
 Project settings are supposed to stay basically the same through your whole project. You decide what they should be once, and then you leave them at that. They do not change when switching environments. Changing them can wreak havoc to your project if you don't know what you're doing. These settings can only be set through an overload of the  *GalacticWasteManager.Create* method.
 
@@ -75,9 +117,8 @@ These settings are typically provided through *wasteManager.Update()* each time 
 #### Mode (required)
 Determines which strategy to use when migrating. Currently, GalacticWasteManager comes with *GreenField* and *LiveField* modes. *BrownField* is in the pipeline. *GreenField* is for when you are developing on a brand new database. *LiveField* is for your production environment, no matter if the database is new or not. *BrownField* is for developing after your first release. You can create your own migration strategies as well. Implement *IMigration* or subclass *MigrationBase* and register in *GalacticWasteManager.MigrationFactories*, or you can supply it directly to the Update-method if you don't want it easily configurable. Details on the different modes and how you can implement your own further down. 
 
-~~#### Clean
-Defaults to *false*. Instructs migrator to clean schema and start anew. There are situations when schema can be cleaned even though this settings is *false*, and there are also situations where cleaning schema is not appropriate. It us up to the current mode to honor this parameter or not.~~
-_This changed in 0.10. Documentation is coming_
+#### Parameters
+Some modes require additional parameters to be set. See each mode for specifications. Parameters are usually supplied through a given input, but their values can be predefined through the *Update*-method. If a required parameter is not set this way, Galactic Waste Manager will ask the current Input to _retrieve_ the parameter.
 
 #### ScriptVariables
 Will by default contain your database name (as provided in connectionstring) on key *DbName*. Otherwise empty. Any *$variable$* in your scripts will be replaced with matching values in the scriptVariables dictionary. Avoid using this unless you're okay with coupling your sql-scripts with GalacticWasteManagement. 
