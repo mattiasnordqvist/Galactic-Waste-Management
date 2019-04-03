@@ -10,7 +10,7 @@ using JellyDust;
 namespace GalacticWasteManagement
 {
     // Galactic Waste Manager almost looks like IoC-container, doesn't it? Maybe it can be replaced.
-    public class GalacticWasteManager : IGalacticWasteManager
+    public class GalacticWasteManager
     {
         public IProjectSettings ProjectSettings { get; private set; }
         public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; }
@@ -98,8 +98,8 @@ namespace GalacticWasteManagement
                 DatabaseName = connectionStringBuilder.InitialCatalog,
                 Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
-                Parameters = new Parameters(new ConsoleInput(true)),
             };
+            gwm.Parameters = new Parameters(new ConsoleInput(true), gwm);
 
             return gwm;
         }

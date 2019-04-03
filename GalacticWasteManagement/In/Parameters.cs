@@ -7,10 +7,12 @@ namespace GalacticWasteManagement
     {
         private Dictionary<string, object> values = new Dictionary<string, object>();
         private IInput input;
+        private readonly GalacticWasteManager wasteManager;
 
-        public Parameters(IInput input)
+        public Parameters(IInput input, GalacticWasteManager wasteManager)
         {
             this.input = input;
+            this.wasteManager = wasteManager;
         }
 
         public void SetInput(IInput input)
@@ -55,7 +57,7 @@ namespace GalacticWasteManagement
                     }
                 }
             }
-            Console.WriteLine($"Using parameter: {param.inputParam.Name}={param.Value.Value}");
+            wasteManager.Logger.Log($"Using parameter: {param.inputParam.Name}={param.Value.Value}", "info");
         }
 
         public void Supply(Dictionary<string, object> parameters)
