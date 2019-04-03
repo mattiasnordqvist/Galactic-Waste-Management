@@ -16,7 +16,7 @@ namespace GalacticWasteManagement
         protected IProjectSettings ProjectSettings { get; }
         protected ILogger Logger { get; }
         public IOutput Output { get; }
-        public IParameters Parameters { get; set; }
+        public IParameters Parameters { get; }
         protected IConnection Connection { get; }
         protected ITransaction Transaction { get; }
         protected bool AllowDrop { get; set; } = false;
@@ -26,11 +26,11 @@ namespace GalacticWasteManagement
         public Dictionary<string, string> ScriptVariables { get; set; }
         public string Name { get; }
 
-        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name)
+        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters parameters, IConnection connection, ITransaction transaction, string name)
         {
             Logger = logger;
             Output = output;
-            Parameters = input;
+            Parameters = parameters;
             Connection = connection;
             Transaction = transaction;
             ProjectSettings = projectSettings;

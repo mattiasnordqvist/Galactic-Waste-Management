@@ -26,11 +26,9 @@ namespace GalacticWasteManagement.In
                     if (string.IsNullOrEmpty(candidate) && param.optional)
                     {
                         param.SetValue(param.defaultValue);
-                        Console.WriteLine($"{param.inputParam.Name}={param.Value.Value}");
                         return;
                     }
                     param.SetValue(param.inputParam.Parse(candidate));
-                    Console.WriteLine($"{param.inputParam.Name}={param.Value.Value}");
                     return;
                 }
                 catch (Exception e)
