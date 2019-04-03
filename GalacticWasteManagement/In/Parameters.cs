@@ -3,20 +3,20 @@ using System.Collections.Generic;
 
 namespace GalacticWasteManagement
 {
-    public class HardCodedInput : Input
+
+    public class Parameters : ParametersBase
     {
         private Dictionary<string, object> values = new Dictionary<string, object>();
-        private Input backUpInput;
+        private IInput input;
 
-        public HardCodedInput(Dictionary<string, object> parameters, Input backUpInput = null)
+        public Parameters(IInput input)
         {
-            values = parameters ?? new Dictionary<string, object>();
-            this.backUpInput = backUpInput;
+            this.input = input;
         }
 
-        public void Set<T>(string paramName, T value)
+        public void SetInput(IInput input)
         {
-            values[paramName] = value;
+            this.input = input;
         }
 
         public override void TrySet<T>(Param<T> param)
@@ -29,7 +29,7 @@ namespace GalacticWasteManagement
             {
                 if (param.optional)
                 {
-                    backUpInput.TrySet(param);
+                    input.TrySet(param);
                     if (!param.Value.HasValue)
                     {
                         param.SetValue(param.defaultValue);
@@ -37,15 +37,23 @@ namespace GalacticWasteManagement
                 }
                 else
                 {
-                    if (backUpInput == null)
+                    if (input == null)
                     {
                         throw new Exception($"Parameter {param.inputParam.Name} not set");
                     }
                     else
                     {
-                        backUpInput.TrySet(param);
+                        input.TrySet(param);
                     }
                 }
+            }
+        }
+
+        public void Supply(Dictionary<string, object> parameters)
+        {
+            foreach (var p in parameters ?? new Dictionary<string, object>())
+            {
+                values[p.Key] = p.Value;
             }
         }
     }

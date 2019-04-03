@@ -10,7 +10,7 @@ namespace GalacticWasteManagement
 {
     public class GreenFieldMigration : MigrationBase
     {
-        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, Input input, IConnection connection, ITransaction transaction, string name = "GreenField") : base(projectSettings, logger, output, input, connection, transaction, name)
+        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, Parameters input, IConnection connection, ITransaction transaction, string name = "GreenField") : base(projectSettings, logger, output, input, connection, transaction, name)
         {
             AllowCreate = true;
             AllowDrop = true;

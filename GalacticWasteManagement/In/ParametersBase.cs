@@ -1,7 +1,6 @@
 ﻿namespace GalacticWasteManagement
 {
-
-    public abstract class Input
+    public abstract class ParametersBase : IInput
     {
         public Param<T> Optional<T>(InputParam<T> inputParam, T defaultValue)
         {
@@ -11,6 +10,7 @@
         {
             return new Param<T>(inputParam, default, false, this);
         }
+
         public abstract void TrySet<T>(Param<T> param);
     }
 }

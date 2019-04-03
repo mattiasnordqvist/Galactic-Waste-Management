@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace GalacticWasteManagement.In
 {
-    public class ConfigInput : Input
+    public class ConfigInput : IInput
     {
         private IConfigurationSection configurationSection;
 
@@ -12,7 +12,7 @@ namespace GalacticWasteManagement.In
             this.configurationSection = configurationSection;
         }
 
-        public override void TrySet<T>(Param<T> param)
+        public void TrySet<T>(Param<T> param)
         {
             if (param.optional && !configurationSection.GetChildren().Any(x => x.Key == param.inputParam.Name))
             {

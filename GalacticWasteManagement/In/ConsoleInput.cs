@@ -2,7 +2,7 @@
 
 namespace GalacticWasteManagement.In
 {
-    public class ConsoleInput : Input
+    public class ConsoleInput : IInput
     {
         private readonly bool optForDefaults;
 
@@ -11,7 +11,7 @@ namespace GalacticWasteManagement.In
             this.optForDefaults = optForDefaults;
         }
 
-        public override void TrySet<T>(Param<T> param)
+        public void TrySet<T>(Param<T> param)
         {
             while (true)
             {
