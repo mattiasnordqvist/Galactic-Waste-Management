@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.3.0-pre1</Version>
+    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <FileVersion>0.3.0.0</FileVersion>
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Content Include="build\GalacticWasteManagement.Cli.Target.targets">
+      <PackagePath>build\</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <!--<ItemGroup Label="dotnet pack instructions">
+    <Content Include="build\*.targets">
+      <Pack>true</Pack>
+      
+    </Content>
+  </ItemGroup>-->
+  <!--<Target Name="CollectRuntimeOutputs" BeforeTargets="_GetPackageFiles">
+    --><!-- Collect these items inside a target that runs after build but before packaging. --><!--
+    <ItemGroup>
+      <Content Include="$(OutputPath)\*.dll;$(OutputPath)\*.json">
+        <Pack>true</Pack>
+        <PackagePath>build\</PackagePath>
+      </Content>
+    </ItemGroup>
+  </Target>-->
+</Project>

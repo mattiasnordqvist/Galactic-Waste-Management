@@ -1,0 +1,5 @@
+﻿<Project>
+  <Target Name="Migrate" AfterTargets="Build">
+    <Exec Command="dotnet run migrate --no-build --no-color --no-user" ConsoleToMsBuild="true" />
+  </Target>
+</Project>
