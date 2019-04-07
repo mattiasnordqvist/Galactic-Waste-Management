@@ -20,8 +20,28 @@ namespace GalacticWasteManagement
 
         public Param<bool> Clean { get; }
 
+        /// <summary>
+        /// criterias for creating database: 
+        /// * Database does not exist
+        /// criterias for cleaning database (any):
+        /// * Schema-version-table does exist &&
+        /// * (Clean-parameter was set ||
+        /// * New, Changed or Removed Seed-scripts ||
+        /// * New, Changed or Removed vNext-scripts ||
+        /// * Removed RunIfChanged-scripts)
+        /// criterias for initalizing database (any)
+        /// * Schema-version-table does not exist
+        /// * criteria for creating database are true
+        /// * critierasfor cleaning database are true
+        /// 
+        /// run new vNext-scripts
+        /// run new or changed runIfChanged-scripts
+        /// run new Seed-scripts
+        /// </summary>
         public override async Task ManageWaste()
         {
+
+           
             var cleanRequested = Clean.Get();
             var hasCleaned = false;
             var isClean = Honestly.DontKnow;
@@ -96,7 +116,7 @@ namespace GalacticWasteManagement
 
             // execute changed and new scripts in RunIfChanged.
             var changedComparison = await Compare("vNext", ScriptType.RunIfChanged);
-
+            // There is a bug here, if any removed RunIfChanged-scripts found, database should be cleaned.
             if (changedComparison.New.Any() || changedComparison.Changed.Any())
             {
                 Logger.Log("Found changed or added RunIfChanged-scripts.", "info");
