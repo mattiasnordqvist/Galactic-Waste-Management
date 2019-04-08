@@ -250,7 +250,7 @@ LiveField mode is supposed to be used when running against a production database
 LiveField mode works like Green Field with a few exceptions.
 
 Seed-scripts, Drop-scripts and vNext-scripts are not run.
-Create and FirstRun will be run if database does not exist.
-Migration-scripts are run instead of vNext-scripts. All migrationscripts not run, that have a higher version than current highest version will be run. (and they should be run in version-order, then alphabetically)
-Any other scripts in the Migration folder, changed, added or removed, will generate warnings.
-RunIfChanged-scripts will be run as in GreenField.
+Create and Initialize might be run, depending on if the database exist and if the SchemaVersionJournal table exist.
+Migration-scripts are run instead of vNext-scripts. All migrationscripts not run, that have a higher version than current highest version will be run. (and they should be run in version-order, then alphabetically).
+If there would be any other scripts in the Migration folder, changed, added or removed, an error will be raised, since older versions should be cemented.
+RunIfChanged-scripts will be run as in GreenField. However, a new situation in LiveField is when you actually remove a RunIfChanged-script. If you do so, you should remove it AND add an ordinary *Migration*-script as well. This migration-script should contain the *drop*-part of the removed *RunIfChanged*-script. Removed *RunIfChanged*-scripts will be journaled on new rows with type 'Deprecated', using the same name and hash as the original script, but with a new version number (the version currently migrating to). If you change your mind and want to re-add the *RunIfChanged*-script again in a future version, you can do so without problems. :+1:
