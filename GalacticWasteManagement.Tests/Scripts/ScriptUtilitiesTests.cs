@@ -12,54 +12,46 @@ namespace GalacticWasteManagement.Tests.Scripts
         [Test]
         public void SplitInBatches_HappyDays()
         {
-            var somethingToSplit = @"SELECT * FROM Table
+            var somethingToSplit = @"SELECT * FROM Table1
               GO
               SELECT * FROM Table2";
             var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
-            Assert.AreEqual("SELECT * FROM Table", actual[0]);
-            Assert.AreEqual("SELECT * FROM Table2", actual[1]);
             Assert.AreEqual(2, actual.Count());
         }
 
         [Test]
         public void SplitInBatches_HappyDays2()
         {
-            var somethingToSplit = @"SELECT * FROM Table";
+            var somethingToSplit = @"SELECT * FROM Table1";
             var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
-            Assert.AreEqual("SELECT * FROM Table", actual[0]);
             Assert.AreEqual(1, actual.Count());
         }
 
         [Test]
         public void SplitInBatches_SemicolonsDoesntFuckThingsUp()
         {
-            var somethingToSplit = @"SELECT * FROM Table
-              GO;
+            var somethingToSplit = @"SELECT * FROM Table1;
+              GO
               SELECT * FROM Table2";
             var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
-            Assert.AreEqual("SELECT * FROM Table", actual[0]);
-            Assert.AreEqual("SELECT * FROM Table2", actual[1]);
             Assert.AreEqual(2, actual.Count());
         }
 
         [Test]
         public void SplitInBatches_CaseInsensitiveness()
         {
-            var somethingToSplit = @"SELECT * FROM Table
+            var somethingToSplit = @"SELECT * FROM Table1;
               gO;
               SELECT * FROM Table2";
             var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
-            Assert.AreEqual("SELECT * FROM Table", actual[0]);
-            Assert.AreEqual("SELECT * FROM Table2", actual[1]);
             Assert.AreEqual(2, actual.Count());
         }
 
         [Test]
         public void SplitInBatches_StringsShouldBeIgnored()
         {
-            var somethingToSplit = @"SELECT * FROM Table WHERE Name = 'é du go LR?'";
+            var somethingToSplit = @"SELECT * FROM Table1 WHERE Name = 'é du go LR?'";
             var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
-            Assert.AreEqual("SELECT * FROM Table WHERE Name = 'é du go ellä?'", actual[0]);
             Assert.AreEqual(1, actual.Count());
         }
     }

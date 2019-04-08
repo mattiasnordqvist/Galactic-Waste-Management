@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GalacticWasteManagement.SqlServer;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -6,13 +7,9 @@ namespace GalacticWasteManagement.Scripts
 {
     public static class ScriptUtilities
     {
-        public static List<string> SplitInBatches(string @this)
+        public static List<string> SplitInBatches(string script)
         {
-            Regex batchRegex = new Regex("\\b([Gg][Oo])\\b;?");
-            return batchRegex
-                    .Split(@this)
-                    .Select(x => x.Trim())
-                    .Where(x => !batchRegex.IsMatch(x))
+            return new MsSqlScriptParser().SplitInBatches(script)
                     .Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
 
         }
