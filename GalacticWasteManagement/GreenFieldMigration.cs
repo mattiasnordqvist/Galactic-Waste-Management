@@ -20,72 +20,58 @@ namespace GalacticWasteManagement
 
         public Param<bool> Clean { get; }
 
+        /// <summary>
+        /// criterias for creating database: 
+        /// * Database does not exist
+        /// criterias for cleaning database (any):
+        /// * Schema-version-table does exist &&
+        /// * (Clean-parameter was set ||
+        /// * Changed or Removed Seed-scripts ||
+        /// * Changed or Removed vNext-scripts ||
+        /// * Removed RunIfChanged-scripts)
+        /// criterias for initalizing database (any)
+        /// * Schema-version-table does not exist
+        /// * criteria for creating database are true
+        /// * critiera for cleaning database are true
+        /// 
+        /// run new vNext-scripts
+        /// run new or changed runIfChanged-scripts
+        /// run new Seed-scripts
+        /// </summary>
         public override async Task ManageWaste()
         {
-            var cleanRequested = Clean.Get();
-            var hasCleaned = false;
-            var isClean = Honestly.DontKnow;
-
-            var dbExists = await DbExist();
-            var dbCreated = false;
-
-            if (!dbExists)
-            {
-                Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
-                await CreateSafe();
-                dbCreated = true;
-                dbExists = true;
-                isClean = true;
-                hasCleaned = true;
-                if (cleanRequested)
-                {
-                    Logger.Log("Parameter 'Clean' was set but ignored, since database was just created. Drop scripts are not run.", "info");
-                    cleanRequested = false;
-                }
-            }
-
-            if (cleanRequested && !dbCreated)
-            {
-                Logger.Log($"Cleaning database '{DatabaseName}' because parameter 'Clean' was set.", "info");
-                await DropSafe();
-                isClean = true;
-                hasCleaned = true;
-            }
-
-            Connection.DbConnection.ChangeDatabase(DatabaseName);
-            if (dbCreated || hasCleaned || !await SchemaVersionJournalExists())
-            {
-                Logger.Log("Creating table for schema versioning.", "info");
-                await Initialize();
-            }
-
-           
-            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
-        
             if (GetScripts(ScriptType.Migration).Any())
             {
                 Logger.Log("Scripts found in Migration folder. No scripts should exist in Migration folder when doing Green Field development.", "warning");
             }
 
-            // execute all scripts in vNext.
-            // if any scripts changed or deleted, drop schema and start over.
-            // scripts added are just run, no matter it's usual ordering.
-            var comparisonVNext = await Compare("vNext", ScriptType.vNext);
-            var comparisonSeed = await Compare("local", ScriptType.Seed);
-
-            if (comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() ||
-                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any())
+            var shouldCreateDatabase = !await DbExist();
+            if (shouldCreateDatabase)
             {
-                Logger.Log("Changed or removed scripts in vNext or Seed. Cleaning schema.", "important");
-                await DropSafe();
-                await Initialize();
-                hasCleaned = true;
-                Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonVNext.All, "vNext");
+                Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
+                await CreateSafe();
             }
-            else if (comparisonVNext.New.Any())
+
+            Connection.DbConnection.ChangeDatabase(DatabaseName);
+            var shouldCleanDatabase = await ShouldClean();
+            if (shouldCleanDatabase) {
+                Logger.Log($"Cleaning database '{DatabaseName}'.", "info");
+                await DropSafe();
+            }
+
+            var shouldInitializeDatabase = shouldCreateDatabase || shouldCleanDatabase || !await SchemaVersionJournalExists();
+            if (shouldInitializeDatabase)
             {
-                Logger.Log("New migrations in vNext found", "info");
+                Logger.Log("Creating table for schema versioning.", "info");
+                await Initialize();
+            }
+           
+            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
+        
+            var comparisonVNext = await Compare("vNext", ScriptType.vNext);
+
+            if (comparisonVNext.New.Any())
+            {
                 Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
                 await RunScripts(comparisonVNext.New, "vNext");
             }
@@ -94,9 +80,7 @@ namespace GalacticWasteManagement
                 Logger.Log("No new vNext migrations", "info");
             }
 
-            // execute changed and new scripts in RunIfChanged.
             var changedComparison = await Compare("vNext", ScriptType.RunIfChanged);
-
             if (changedComparison.New.Any() || changedComparison.Changed.Any())
             {
                 Logger.Log("Found changed or added RunIfChanged-scripts.", "info");
@@ -108,14 +92,9 @@ namespace GalacticWasteManagement
                 Logger.Log("No new or changed RunIfChanged migrations", "info");
             }
 
-            if (hasCleaned && comparisonSeed.All.Any())
+            var comparisonSeed = await Compare("local", ScriptType.Seed);
+            if (comparisonSeed.New.Any())
             {
-                Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonSeed.All, "Local");
-            }
-            else if (comparisonSeed.New.Any())
-            {
-                Logger.Log("New seed scripts found", "info");
                 Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
                 await RunScripts(comparisonSeed.New, "Local");
             }
@@ -123,6 +102,28 @@ namespace GalacticWasteManagement
             {
                 Logger.Log("No new Seed scripts", "info");
             }
+        }
+
+        private async Task<bool> ShouldClean()
+        {
+            var schemaVersionTableExists = await SchemaVersionJournalExists();
+            if (schemaVersionTableExists)
+            {
+                if (Clean.Get())
+                {
+                    return true;
+                }
+                var comparisonVNext = await Compare("vNext", ScriptType.vNext);
+                var comparisonSeed = await Compare("local", ScriptType.Seed);
+                var comparisonRunIfChanged = await Compare("vNext", ScriptType.RunIfChanged);
+
+                return
+                comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() ||
+                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any() ||
+                comparisonRunIfChanged.Removed.Any();
+            }
+
+            return false;
         }
     }
 }

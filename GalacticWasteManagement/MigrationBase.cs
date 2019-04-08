@@ -36,7 +36,24 @@ namespace GalacticWasteManagement
             ProjectSettings = projectSettings;
             Name = name;
         }
-
+        protected async Task Deprecate(List<SchemaVersionJournalEntry> deprecated, string version)
+        {
+            foreach (var script in deprecated)
+            {
+                var entry = new SchemaVersionJournalEntry
+                {
+                    Name = script.Name,
+                    Type = "Deprecated",
+                    Applied = DateTime.Now,
+                    Version = version,
+                    Hash = script.Hash
+                };
+                using (var step = Output.MiniProfiler.Step($"Journaling {script.Name}"))
+                {
+                    await Connection.ExecuteAsync("INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hash) values (@Version, @Type, @Name, @Applied, @Hash)", entry);
+                }
+            }
+        }
         protected async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, string version, string database = null)
         {
             Connection.DbConnection.ChangeDatabase(database ?? DatabaseName);
@@ -122,9 +139,11 @@ WITH REPLACE
         {
             return (await Connection.QueryAsync<SchemaVersionJournalEntry>($@"
                 SELECT * FROM (
-                    SELECT * FROM SchemaVersionJournal WHERE [Type] <> '{ScriptType.RunIfChanged.Name}'
+                    SELECT * FROM SchemaVersionJournal WHERE [Type] <> '{ScriptType.RunIfChanged.Name}' AND [Type] <> '{ScriptType.Deprecated.Name}'
                     UNION ALL
-                    SELECT * FROM SchemaVersionJournal WHERE Id IN (
+                    SELECT a.* FROM SchemaVersionJournal a 
+                    LEFT JOIN SchemaVersionJournal b on b.Name = a.Name AND b.Hash = a.Hash AND b.Id > a.Id AND b.Type = '{ScriptType.Deprecated.Name}'
+                    WHERE  b.Id IS NULL AND a.Id IN (
                         SELECT Max(Id) FROM SchemaVersionJournal WHERE [Type] = '{ScriptType.RunIfChanged.Name}' GROUP BY Name
                     )
                 ) _
