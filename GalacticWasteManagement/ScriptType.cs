@@ -10,6 +10,7 @@
         public static readonly ScriptType Initialize = new Initialize();
         public static readonly ScriptType vNext = new vNext();
         public static readonly ScriptType Migration = new Migration();
+        public static readonly ScriptType Deprecated = new Deprecated();
 
         public string Name
         {
@@ -21,6 +22,10 @@
     }
 
     public class RunIfChanged : ScriptType
+    {
+        public override bool IsJournaled => true;
+    }
+    public class Deprecated : ScriptType
     {
         public override bool IsJournaled => true;
     }
