@@ -8,7 +8,7 @@ namespace GalacticWasteManagement.Scripts
     {
         public static List<string> SplitInBatches(string @this)
         {
-            Regex batchRegex = new Regex("\\b((GO)|(Go)|(gO)|(go))\\b;?");
+            Regex batchRegex = new Regex("\\b([Gg][Oo])\\b;?");
             return batchRegex
                     .Split(@this)
                     .Select(x => x.Trim())
