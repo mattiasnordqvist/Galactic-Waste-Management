@@ -95,6 +95,46 @@ namespace GalacticWasteManagement
 
         }
 
+        private class DbFilesInfo
+        {
+            public string LogicalName { get; set; }
+            public string PhysicalName { get; set; }
+            public string TypeOfFile { get; set; }
+
+        }
+
+        public async Task Restore(string sourceBak, string mdfLogicalName = null, string mdfPhysicalName = null, string ldfLogicalName = null, string ldfPhysicalName = null)
+        {
+            var currentDb = Connection.DbConnection.Database;
+            Connection.DbConnection.ChangeDatabase("master");
+            try
+            {
+                var dbNames = await Connection.QueryAsync<DbFilesInfo>($@"
+SELECT f.name LogicalName,
+f.physical_name AS PhysicalName,
+f.type_desc TypeOfFile
+FROM sys.master_files f
+INNER JOIN sys.databases d ON d.database_id = f.database_id
+WHERE d.Name = '{currentDb}'");
+
+                var rows = dbNames.Single(x => x.TypeOfFile == "ROWS");
+                var log = dbNames.Single(x => x.TypeOfFile == "LOG");
+                
+                await Connection.ExecuteAsync($@"
+RESTORE DATABASE [{currentDb}]
+FROM DISK = '{sourceBak}'
+WITH REPLACE
+--,
+--WITH MOVE '{mdfLogicalName ?? rows.LogicalName}' TO '{mdfPhysicalName ?? rows.PhysicalName}',
+--MOVE '{ldfLogicalName ?? log.LogicalName}' TO '{ldfPhysicalName ?? log.PhysicalName}'");
+            }
+            finally
+            {
+                Connection.DbConnection.ChangeDatabase(currentDb);
+            }
+
+        }
+
         public async Task<List<SchemaVersionJournalEntry>> GetSchema(string schemaVersion = null, IScriptType type = null)
         {
             return (await Connection.QueryAsync<SchemaVersionJournalEntry>($@"
@@ -111,9 +151,9 @@ namespace GalacticWasteManagement
             ).ToList();
         }
 
-        public async Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry() => (await Connection.QueryFirstOrDefaultAsync<SchemaVersionJournalEntry>(@"
+        public async Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry() => (await Connection.QueryFirstOrDefaultAsync<SchemaVersionJournalEntry>($@"
 IF OBJECT_ID(N'dbo.SchemaVersionJournal', N'U') IS NOT NULL
-SELECT TOP 1 * FROM SchemaVersionJournal ORDER BY Id DESC
+SELECT TOP 1 * FROM SchemaVersionJournal WHERE [Type] = '{ScriptType.Migration.Name}' ORDER BY Id DESC
 ELSE 
 SELECT NULL
 "));
