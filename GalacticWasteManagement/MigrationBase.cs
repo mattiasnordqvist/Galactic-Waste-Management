@@ -151,9 +151,9 @@ WITH REPLACE
             ).ToList();
         }
 
-        public async Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry() => (await Connection.QueryFirstOrDefaultAsync<SchemaVersionJournalEntry>(@"
+        public async Task<SchemaVersionJournalEntry> GetLastSchemaVersionJournalEntry() => (await Connection.QueryFirstOrDefaultAsync<SchemaVersionJournalEntry>($@"
 IF OBJECT_ID(N'dbo.SchemaVersionJournal', N'U') IS NOT NULL
-SELECT TOP 1 * FROM SchemaVersionJournal ORDER BY Id DESC
+SELECT TOP 1 * FROM SchemaVersionJournal WHERE [Type] = '{ScriptType.Migration.Name}' ORDER BY Id DESC
 ELSE 
 SELECT NULL
 "));

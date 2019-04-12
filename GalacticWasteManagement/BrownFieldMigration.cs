@@ -10,81 +10,107 @@ namespace GalacticWasteManagement
     public class BrownFieldMigration : MigrationBase
     {
         public static readonly string Param_Source = "source";
-        public static readonly string Param_ForceRestore = "force-restore";
+        public static readonly string Param_Clean = "clean";
 
         public BrownFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name) : base(projectSettings, logger, output, input, connection, transaction, name)
         {
             AllowCreate = true;
             AllowDrop = true;
 
-            ForceRestore = Parameters.Optional(new InputBool(Param_ForceRestore, "force restore from backup"), false);
-            Source = Parameters.Required(new InputFile(Param_Source, ".bak-file to restore from", true));
+            Clean = Parameters.Optional(new InputBool(Param_Clean, "force restore from backup or clean if no source specified"), false);
+            Source = Parameters.Optional(new InputFile(Param_Source, ".bak-file to restore from", true), null);
         }
 
-        public Param<bool> ForceRestore { get; }
+        public Param<bool> Clean { get; }
         public Param<string> Source { get; }
 
+        /// <summary>
+        /// If db does not exist, create and initialize
+        /// If(
+        /// * Changed or Removed Seed-scripts ||
+        /// * Changed or Removed vNext-scripts ||
+        /// * Removed RunIfChanged-scripts ||
+        /// * Force-Restore)
+        /// Then If Source is set, do restore,
+        /// otherwise clean and initialize.
+        /// 
+        /// * Run MigrationScript like in LiveField
+        /// * Run vNext-scripts like in greenfield
+        /// * Run RunIfChangedScripts like in greenfield
+        /// * Run Seeds like in greenfield
+        /// </summary>
+        /// <returns></returns>
         public override async Task ManageWaste()
         {
-            var cleanRequested = ForceRestore.Get();
-            var hasCleaned = false;
-            var isClean = Honestly.DontKnow;
-
-            var dbExists = await DbExist();
-            var dbCreated = false;
-
-            if (!dbExists)
+            var shouldCreateDatabase = !await DbExist();
+            if (shouldCreateDatabase)
             {
-                Logger.Log($"No '{DatabaseName}' database found. It will be created.", "warning");
+                Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
                 await CreateSafe();
-                dbCreated = true;
-                dbExists = true;
-                isClean = true;
-                hasCleaned = true;
-                if (cleanRequested)
+            }
+
+            Connection.DbConnection.ChangeDatabase(DatabaseName);
+            var shouldCleanDatabase = await ShouldClean();
+            if (shouldCleanDatabase)
+            {
+                if (Source.Get() == null)
                 {
-                    Logger.Log("Parameter 'Clean' was set but ignored, since database was just created. Drop scripts are not run.", "info");
-                    cleanRequested = false;
+                    if (shouldCleanDatabase)
+                    {
+                        Logger.Log($"Cleaning database '{DatabaseName}'.", "info");
+                        await DropSafe();
+                    }
+
+                    var shouldInitializeDatabase = shouldCreateDatabase || shouldCleanDatabase || !await SchemaVersionJournalExists();
+                    if (shouldInitializeDatabase)
+                    {
+                        Logger.Log("Creating table for schema versioning.", "info");
+                        await Initialize();
+                    }
+                }
+                else
+                {
+                    Logger.Log($"Restoring database '{DatabaseName}' from '{Source.Get()}'.", "info");
+                    await Restore(Source.Get());
                 }
             }
-            Connection.DbConnection.ChangeDatabase(DatabaseName);
-            if (dbCreated || cleanRequested)
-            {
-                await Restore(Source.Get());
-            }
-
 
             var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
 
-            // execute all scripts in Migrations in latest version.
+            // Get all migration scripts and schema-info
             var scripts = GetScripts(ScriptType.Migration);
             var schema = await GetSchema(null, ScriptType.Migration);
 
-            var migrationComparison = Compare(scripts, schema);
-            if (migrationComparison.Unchanged.Count() != migrationComparison.All.Count())
+            // if any changed/removed/added on earlier versions, warn
+            // all added on current version and onward should be new, run them
+            var lastJournalEntry = await GetLastSchemaVersionJournalEntry();
+            var v = lastJournalEntry != null ? new Scripts.Version(lastJournalEntry.Version) : null;
+            var olderAndSameVersionScripts = scripts.Where(s => v != null && ProjectSettings.MigrationVersioning.Compare(ProjectSettings.MigrationVersioning.Version(s), v) <= 0);
+            var olderAndSameversionSchema = schema.Where(s => v != null && ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) <= 0);
+            var olderComparison = Compare(olderAndSameVersionScripts, olderAndSameversionSchema);
+            if (olderComparison.Unchanged.Count() != olderComparison.All.Count())
             {
-                Logger.Log("Older migration scripts were found. They will not be run.", "warning");
+                Logger.Log("Older migration scripts were found. That's not how it's supposed to be like!", "error");
+                return;
+            }
+            var newerScripts = scripts.Where(s => v == null || ProjectSettings.MigrationVersioning.Compare(ProjectSettings.MigrationVersioning.Version(s), v) > 0);
+            var newerSchema = schema.Where(s => (v == null || ProjectSettings.MigrationVersioning.Compare(s.VersionStringForJournaling, v) > 0));
+            var newerComparison = Compare(newerScripts, newerSchema);
+            if (newerComparison.New.Count() != newerComparison.All.Count())
+            {
+                Logger.Log("Something strange is going on...", "error");
+                return;
+            }
+            if (newerComparison.New.Any())
+            {
+                Logger.Log("New migration scripts were found and will be run.", "info");
+                lastJournalEntry = await RunScripts(newerComparison.New, null);
             }
 
-            // execute all scripts in vNext.
-            // if any scripts changed or deleted, drop schema and start over.
-            // scripts added are just run, no matter it's usual ordering.
             var comparisonVNext = await Compare("vNext", ScriptType.vNext);
-            var comparisonSeed = await Compare("local", ScriptType.Seed);
 
-            if (comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() ||
-                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any())
+            if (comparisonVNext.New.Any())
             {
-                Logger.Log("Changed or removed scripts in vNext or Seed. Cleaning schema.", "important");
-                await DropSafe();
-                await Initialize();
-                hasCleaned = true;
-                Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonVNext.All, "vNext");
-            }
-            else if (comparisonVNext.New.Any())
-            {
-                Logger.Log("New migrations in vNext found", "info");
                 Logger.Log($"Performing vNext migrations for '{DatabaseName}' database.", "info");
                 await RunScripts(comparisonVNext.New, "vNext");
             }
@@ -93,9 +119,7 @@ namespace GalacticWasteManagement
                 Logger.Log("No new vNext migrations", "info");
             }
 
-            // execute changed and new scripts in RunIfChanged.
             var changedComparison = await Compare(null, ScriptType.RunIfChanged);
-
             if (changedComparison.New.Any() || changedComparison.Changed.Any())
             {
                 Logger.Log("Found changed or added RunIfChanged-scripts.", "info");
@@ -107,14 +131,9 @@ namespace GalacticWasteManagement
                 Logger.Log("No new or changed RunIfChanged migrations", "info");
             }
 
-            if (hasCleaned && comparisonSeed.All.Any())
+            var comparisonSeed = await Compare("local", ScriptType.Seed);
+            if (comparisonSeed.New.Any())
             {
-                Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
-                await RunScripts(comparisonSeed.All, "Local");
-            }
-            else if (comparisonSeed.New.Any())
-            {
-                Logger.Log("New seed scripts found", "info");
                 Logger.Log($"Running seeds for '{DatabaseName}' database.", "info");
                 await RunScripts(comparisonSeed.New, "Local");
             }
@@ -122,6 +141,28 @@ namespace GalacticWasteManagement
             {
                 Logger.Log("No new Seed scripts", "info");
             }
+        }
+
+        private async Task<bool> ShouldClean()
+        {
+            var schemaVersionTableExists = await SchemaVersionJournalExists();
+            if (schemaVersionTableExists)
+            {
+                if (Clean.Get())
+                {
+                    return true;
+                }
+                var comparisonVNext = await Compare("vNext", ScriptType.vNext);
+                var comparisonSeed = await Compare("local", ScriptType.Seed);
+                var comparisonRunIfChanged = await Compare(null, ScriptType.RunIfChanged);
+
+                return
+                comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() ||
+                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any() ||
+                comparisonRunIfChanged.Removed.Any(x => x.Version == "vNext");
+            }
+
+            return false;
         }
     }
 }

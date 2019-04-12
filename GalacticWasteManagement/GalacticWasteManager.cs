@@ -24,11 +24,11 @@ namespace GalacticWasteManagement
         {
             var greenfield = new GreenFieldMigrationFactory();
             var liveField = new LiveFieldMigrationFactory();
-            //var brownField = new BrownFieldMigrationFactory();
+            var brownField = new BrownFieldMigrationFactory();
             MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> {
                 { greenfield.Name, greenfield.Create },
-                { liveField.Name, liveField.Create }
-                //{ brownField.Name, brownField.Create }
+                { liveField.Name, liveField.Create },
+                { brownField.Name, brownField.Create }
             };
         }
 
