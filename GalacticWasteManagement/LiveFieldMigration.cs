@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
+using HonestNamespace;
 using JellyDust;
 
 namespace GalacticWasteManagement
@@ -13,7 +14,10 @@ namespace GalacticWasteManagement
         public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name = "LiveField") : base(projectSettings, logger, output, input, connection, transaction, name)
         {
             AllowCreate = true;
+            SkipCreate = Parameters.Optional(new InputBool("skip-create", "will not create database"), false);
         }
+
+        public Param<bool> SkipCreate { get; }
 
         /// <summary>
         /// * Warn if any vNext
@@ -25,13 +29,20 @@ namespace GalacticWasteManagement
         /// </summary>
         public override async Task ManageWaste()
         {
-            var shouldCreateDatabase = !await DbExist();
-            if (shouldCreateDatabase)
+            var shouldCreateDatabase = Honestly.DontKnow;
+            if (!SkipCreate.Get())
             {
-                Logger.Log($"No '{DatabaseName}' database found. It will be created.", "warning");
-                await CreateSafe();
+                shouldCreateDatabase = !await DbExist();
+                if (shouldCreateDatabase)
+                {
+                    Logger.Log($"No '{DatabaseName}' database found. It will be created.", "warning");
+                    await CreateSafe();
+                }
             }
-            Connection.DbConnection.ChangeDatabase(DatabaseName);
+            else
+            {
+                shouldCreateDatabase = false;
+            }
 
             var shouldInitializeDatabase = shouldCreateDatabase || !await SchemaVersionJournalExists();
             if (shouldInitializeDatabase)
@@ -105,7 +116,5 @@ namespace GalacticWasteManagement
                 Logger.Log("No new or changed RunIfChanged scripts", "info");
             }
         }
-
-       
     }
 }

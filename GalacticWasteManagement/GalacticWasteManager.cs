@@ -41,10 +41,6 @@ namespace GalacticWasteManagement
             {
                 var variables = scriptVariables ?? new Dictionary<string, string>();
                 variables.Add("DbName", DatabaseName);
-                ConnectionStringBuilder.InitialCatalog = "master";
-                // - But what if we can't connect to master?!
-                // - But what if we can't connect to db in connectionstring!?
-                // - But what if we just handle stuff accordingly?!
 
                 using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(ConnectionStringBuilder.ConnectionString, Output)))
                 {

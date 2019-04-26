@@ -16,9 +16,11 @@ namespace GalacticWasteManagement
             AllowDrop = true;
 
             Clean = Parameters.Optional(new InputBool("clean", "force database to clean"), false);
+            SkipCreate = Parameters.Optional(new InputBool("skip-create", "will not create database"), false);
         }
 
         public Param<bool> Clean { get; }
+        public Param<bool> SkipCreate { get; }
 
         /// <summary>
         /// criterias for creating database: 
@@ -44,17 +46,24 @@ namespace GalacticWasteManagement
             {
                 Logger.Log("Scripts found in Migration folder. No scripts should exist in Migration folder when doing Green Field development.", "warning");
             }
-
-            var shouldCreateDatabase = !await DbExist();
-            if (shouldCreateDatabase)
+            var shouldCreateDatabase = Honestly.DontKnow;
+            if (!SkipCreate.Get())
             {
-                Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
-                await CreateSafe();
+                shouldCreateDatabase = !await DbExist();
+                if (shouldCreateDatabase)
+                {
+                    Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
+                    await CreateSafe();
+                }
+            }
+            else
+            {
+                shouldCreateDatabase = false;
             }
 
-            Connection.DbConnection.ChangeDatabase(DatabaseName);
             var shouldCleanDatabase = await ShouldClean();
-            if (shouldCleanDatabase) {
+            if (shouldCleanDatabase)
+            {
                 Logger.Log($"Cleaning database '{DatabaseName}'.", "info");
                 await DropSafe();
             }
@@ -65,9 +74,9 @@ namespace GalacticWasteManagement
                 Logger.Log("Creating table for schema versioning.", "info");
                 await Initialize();
             }
-           
+
             var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
-        
+
             var comparisonVNext = await Compare("vNext", ScriptType.vNext);
 
             if (comparisonVNext.New.Any())

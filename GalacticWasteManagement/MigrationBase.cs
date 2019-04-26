@@ -188,7 +188,7 @@ SELECT NULL
             return RunScripts(GetScripts(ScriptType.Drop), null);
         }
 
-        protected Task CreateSafe()
+        protected async Task CreateSafe()
         {
             if (!AllowCreate)
             {
@@ -196,7 +196,9 @@ SELECT NULL
             }
 
             Logger.Log($"Creating database '{DatabaseName}'.", "important");
-            return RunScripts(GetScripts(ScriptType.Create), null, "master");
+            await RunScripts(GetScripts(ScriptType.Create), null, "master");
+            Connection.DbConnection.ChangeDatabase(DatabaseName);
+
         }
 
         protected Task Initialize()
