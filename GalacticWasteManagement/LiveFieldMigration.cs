@@ -13,11 +13,7 @@ namespace GalacticWasteManagement
     {
         public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name = "LiveField") : base(projectSettings, logger, output, input, connection, transaction, name)
         {
-            AllowCreate = true;
-            SkipCreate = Parameters.Optional(new InputBool("skip-create", "will not create database"), false);
         }
-
-        public Param<bool> SkipCreate { get; }
 
         /// <summary>
         /// * Warn if any vNext
@@ -29,22 +25,7 @@ namespace GalacticWasteManagement
         /// </summary>
         public override async Task ManageWaste()
         {
-            var shouldCreateDatabase = Honestly.DontKnow;
-            if (!SkipCreate.Get())
-            {
-                shouldCreateDatabase = !await DbExist();
-                if (shouldCreateDatabase)
-                {
-                    Logger.Log($"No '{DatabaseName}' database found. It will be created.", "warning");
-                    await CreateSafe();
-                }
-            }
-            else
-            {
-                shouldCreateDatabase = false;
-            }
-
-            var shouldInitializeDatabase = shouldCreateDatabase || !await SchemaVersionJournalExists();
+            var shouldInitializeDatabase = !await SchemaVersionJournalExists();
             if (shouldInitializeDatabase)
             {
                 Logger.Log("Creating table for schema versioning.", "info");
@@ -85,7 +66,7 @@ namespace GalacticWasteManagement
             if (newerComparison.New.Any())
             {
                 Logger.Log("New migration scripts were found and will be run.", "info");
-                lastJournalEntry = await RunScripts(newerComparison.New, null);
+                lastJournalEntry = await RunScripts(newerComparison.New);
             }
 
            

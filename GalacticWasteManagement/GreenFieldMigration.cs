@@ -1,9 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
-using HonestNamespace;
 using JellyDust;
 
 namespace GalacticWasteManagement
@@ -12,15 +10,12 @@ namespace GalacticWasteManagement
     {
         public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name = "GreenField") : base(projectSettings, logger, output, input, connection, transaction, name)
         {
-            AllowCreate = true;
             AllowDrop = true;
-
             Clean = Parameters.Optional(new InputBool("clean", "force database to clean"), false);
-            SkipCreate = Parameters.Optional(new InputBool("skip-create", "will not create database"), false);
+            
         }
 
         public Param<bool> Clean { get; }
-        public Param<bool> SkipCreate { get; }
 
         /// <summary>
         /// criterias for creating database: 
@@ -46,20 +41,6 @@ namespace GalacticWasteManagement
             {
                 Logger.Log("Scripts found in Migration folder. No scripts should exist in Migration folder when doing Green Field development.", "warning");
             }
-            var shouldCreateDatabase = Honestly.DontKnow;
-            if (!SkipCreate.Get())
-            {
-                shouldCreateDatabase = !await DbExist();
-                if (shouldCreateDatabase)
-                {
-                    Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
-                    await CreateSafe();
-                }
-            }
-            else
-            {
-                shouldCreateDatabase = false;
-            }
 
             var shouldCleanDatabase = await ShouldClean();
             if (shouldCleanDatabase)
@@ -68,7 +49,7 @@ namespace GalacticWasteManagement
                 await DropSafe();
             }
 
-            var shouldInitializeDatabase = shouldCreateDatabase || shouldCleanDatabase || !await SchemaVersionJournalExists();
+            var shouldInitializeDatabase = shouldCleanDatabase || !await SchemaVersionJournalExists();
             if (shouldInitializeDatabase)
             {
                 Logger.Log("Creating table for schema versioning.", "info");

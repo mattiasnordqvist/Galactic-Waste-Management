@@ -14,18 +14,14 @@ namespace GalacticWasteManagement
 
         public BrownFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name) : base(projectSettings, logger, output, input, connection, transaction, name)
         {
-            AllowCreate = true;
             AllowDrop = true;
 
             Clean = Parameters.Optional(new InputBool(Param_Clean, "force restore from backup or clean if no source specified"), false);
             Source = Parameters.Optional(new InputFile(Param_Source, ".bak-file to restore from", true), null);
-            SkipCreate = Parameters.Optional(new InputBool("skip-create", "will not create database"), false);
         }
 
         public Param<bool> Clean { get; }
         public Param<string> Source { get; }
-
-        public Param<bool> SkipCreate { get; }
 
         /// <summary>
         /// If db does not exist, create and initialize
@@ -45,21 +41,6 @@ namespace GalacticWasteManagement
         /// <returns></returns>
         public override async Task ManageWaste()
         {
-            var shouldCreateDatabase = Honestly.DontKnow;
-            if (!SkipCreate.Get())
-            {
-                shouldCreateDatabase = !await DbExist();
-                if (shouldCreateDatabase)
-                {
-                    Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
-                    await CreateSafe();
-                }
-            }
-            else
-            {
-                shouldCreateDatabase = false;
-            }
-
             var shouldCleanDatabase = await ShouldClean();
             if (shouldCleanDatabase)
             {
@@ -71,7 +52,7 @@ namespace GalacticWasteManagement
                         await DropSafe();
                     }
 
-                    var shouldInitializeDatabase = shouldCreateDatabase || shouldCleanDatabase || !await SchemaVersionJournalExists();
+                    var shouldInitializeDatabase = shouldCleanDatabase || !await SchemaVersionJournalExists();
                     if (shouldInitializeDatabase)
                     {
                         Logger.Log("Creating table for schema versioning.", "info");
@@ -114,7 +95,7 @@ namespace GalacticWasteManagement
             if (newerComparison.New.Any())
             {
                 Logger.Log("New migration scripts were found and will be run.", "info");
-                lastJournalEntry = await RunScripts(newerComparison.New, null);
+                lastJournalEntry = await RunScripts(newerComparison.New);
             }
 
             var comparisonVNext = await Compare("vNext", ScriptType.vNext);

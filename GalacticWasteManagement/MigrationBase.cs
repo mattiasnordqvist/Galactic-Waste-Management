@@ -20,7 +20,6 @@ namespace GalacticWasteManagement
         protected IConnection Connection { get; }
         protected ITransaction Transaction { get; }
         protected bool AllowDrop { get; set; } = false;
-        protected bool AllowCreate { get; set; } = false;
         public string DatabaseName { get; set; }
 
         public Dictionary<string, string> ScriptVariables { get; set; }
@@ -54,9 +53,8 @@ namespace GalacticWasteManagement
                 }
             }
         }
-        protected async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, string version, string database = null)
+        protected async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, string version = null)
         {
-            Connection.DbConnection.ChangeDatabase(database ?? DatabaseName);
             var lastVersion = await GetLastSchemaVersionJournalEntry();
             var orderedScripts = scripts.OrderBy(x => x.Type.IsJournaled);
             if (version == null)
@@ -119,7 +117,7 @@ WHERE d.Name = '{currentDb}'");
 
                 var rows = dbNames.Single(x => x.TypeOfFile == "ROWS");
                 var log = dbNames.Single(x => x.TypeOfFile == "LOG");
-                
+
                 await Connection.ExecuteAsync($@"
 RESTORE DATABASE [{currentDb}]
 FROM DISK = '{sourceBak}'
@@ -158,19 +156,7 @@ ELSE
 SELECT NULL
 "));
 
-        public async Task<bool> DbExist()
-        {
-            var currentDb = Connection.DbConnection.Database;
-            Connection.DbConnection.ChangeDatabase("master");
-            try
-            {
-                return (await Connection.ExecuteScalarAsync<int>("SELECT 1 FROM sys.databases WHERE name = @dbName", new { dbName = DatabaseName })) == 1;
-            }
-            finally
-            {
-                Connection.DbConnection.ChangeDatabase(currentDb);
-            }
-        }
+
         public async Task<bool> SchemaVersionJournalExists()
         {
             return (await Connection.QueryFirstOrDefaultAsync<int?>("SELECT OBJECT_ID(N'dbo.SchemaVersionJournal', N'U')")).HasValue;
@@ -185,25 +171,12 @@ SELECT NULL
             }
 
             Logger.Log($"Dropping '{DatabaseName}' database schema.", "important");
-            return RunScripts(GetScripts(ScriptType.Drop), null);
-        }
-
-        protected async Task CreateSafe()
-        {
-            if (!AllowCreate)
-            {
-                Logger.Log($"Creating database in current field is prohibited!", "warning");
-            }
-
-            Logger.Log($"Creating database '{DatabaseName}'.", "important");
-            await RunScripts(GetScripts(ScriptType.Create), null, "master");
-            Connection.DbConnection.ChangeDatabase(DatabaseName);
-
+            return RunScripts(GetScripts(ScriptType.Drop));
         }
 
         protected Task Initialize()
         {
-            return RunScripts(GetScripts(ScriptType.Initialize), null);
+            return RunScripts(GetScripts(ScriptType.Initialize));
         }
 
         protected static SchemaComparison Compare(IEnumerable<IScript> scripts, IEnumerable<SchemaVersionJournalEntry> schema)

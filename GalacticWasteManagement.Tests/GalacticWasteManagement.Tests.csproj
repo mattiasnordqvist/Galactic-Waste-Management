@@ -10,7 +10,7 @@
     <PackageReference Include="AutoFixture" Version="4.8.0" />
     <PackageReference Include="autofixture.autofakeiteasy" Version="4.8.0" />
     <PackageReference Include="AutoFixture.NUnit3" Version="4.8.0" />
-    <PackageReference Include="FakeItEasy" Version="5.1.0" />
+    <PackageReference Include="FakeItEasy" Version="5.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
   </ItemGroup>

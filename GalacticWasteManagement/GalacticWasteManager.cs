@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using GalacticWasteManagement.In;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
+using GalacticWasteManagement.SqlServer;
+using HonestNamespace;
 using JellyDust;
+using JellyDust.Dapper;
 
 namespace GalacticWasteManagement
 {
@@ -42,15 +45,17 @@ namespace GalacticWasteManagement
                 var variables = scriptVariables ?? new Dictionary<string, string>();
                 variables.Add("DbName", DatabaseName);
 
+                Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
+                Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
+
                 using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(ConnectionStringBuilder.ConnectionString, Output)))
                 {
-                    Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
-                    Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
                     var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
                     migrator.Parameters.Supply(parameters);
                     migrator.DatabaseName = DatabaseName;
                     migrator.ScriptVariables = variables;
                     Logger.Log($"Running {migrator.Name} mode", "important");
+                    await MaybeCreateDatabase();
                     await migrator.ManageWaste();
                     uow.Commit();
                     Logger.Log("Galactic waste has been managed!", "success");
@@ -61,6 +66,38 @@ namespace GalacticWasteManagement
             {
                 Logger.Log(e.Message, "error");
                 throw;
+            }
+        }
+
+        private async Task MaybeCreateDatabase()
+        {
+            var masterConnection = new Connection(new ConnectionFactory(ConnectionStringBuilder.For("master").ConnectionString, Output));
+            try
+            {
+                var dbExists = Honestly.DontKnow;
+                if (!Parameters.Optional(new InputBool("skip-create", "will not create database if set"), false).Get())
+                {
+                    dbExists = (await masterConnection.ExecuteScalarAsync<int>("SELECT 1 FROM sys.databases WHERE name = @dbName", new { dbName = DatabaseName })) == 1;
+                    if (!dbExists)
+                    {
+                        Logger.Log($"Database '{DatabaseName}' not found. It will be created.", "important");
+                        Logger.Log($"Creating database '{DatabaseName}'.", "important");
+                        await masterConnection.ExecuteAsync($@"IF(DB_ID(N'{DatabaseName}') IS NULL) BEGIN CREATE DATABASE [{DatabaseName}] END");
+                        dbExists = true;
+                    }
+                }
+                if (!dbExists.IsKnown && Parameters.Optional(new InputBool("ensure-db-exists", "halts execution if db does not exist, requires access to master db"), false).Get())
+                {
+                    dbExists = (await masterConnection.ExecuteScalarAsync<int>("SELECT 1 FROM sys.databases WHERE name = @dbName", new { dbName = DatabaseName })) == 1;
+                    if (!dbExists)
+                    {
+                        throw new Exception($"Database {DatabaseName} does not exist");
+                    }
+                }
+            }
+            finally
+            {
+                masterConnection.Dispose();
             }
         }
 

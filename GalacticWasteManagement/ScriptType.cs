@@ -6,7 +6,6 @@
         public static readonly ScriptType RunIfChanged = new RunIfChanged();
         public static readonly ScriptType Seed = new Seed();
         public static readonly ScriptType Drop = new Drop();
-        public static readonly ScriptType Create = new Create();
         public static readonly ScriptType Initialize = new Initialize();
         public static readonly ScriptType vNext = new vNext();
         public static readonly ScriptType Migration = new Migration();
@@ -34,10 +33,6 @@
         public override bool IsJournaled => true;
     }
     public class Drop : ScriptType
-    {
-        public override bool IsJournaled => false;
-    }
-    public class Create : ScriptType
     {
         public override bool IsJournaled => false;
     }

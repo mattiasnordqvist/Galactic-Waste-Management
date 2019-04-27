@@ -6,10 +6,6 @@ namespace GalacticWasteManagement.Scripts.ScriptProviders
     {
         public IEnumerable<IScript> GetScripts(IScriptType scriptType)
         {
-            if(scriptType == ScriptType.Create)
-            {
-                yield return new CreateDatabase();
-            }
             if (scriptType == ScriptType.Initialize)
             {
                 yield return new CreateSchemaVersionJournal();
