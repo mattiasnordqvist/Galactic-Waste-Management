@@ -18,7 +18,8 @@ This package is supposed to replace FluentMigrator, DbUp or RoundhousE or whatev
 
 Soooo, I felt that I'm done creating garbage migration scripts that are not working the way I want... Welcome to Galactic Waste Management.
 
-- [Galactic Waste Management](#galactic-waste-management)
+# Galactic Waste Management
+
   * [Quickstart](#quickstart)
   * [Configuration](#configuration)
     + [Environment](#environment)
@@ -50,8 +51,6 @@ Soooo, I felt that I'm done creating garbage migration scripts that are not work
       - [Drop](#drop)
     + [LiveField](#livefield)
     + [BrownField](#brownfield)
-
-# Galactic Waste Management
 
 ## Quickstart
 1. Create a new dot net core console app. 
