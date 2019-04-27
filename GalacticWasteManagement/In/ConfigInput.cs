@@ -12,11 +12,12 @@ namespace GalacticWasteManagement.In
             this.configurationSection = configurationSection;
         }
 
+        public string Name => "json";
+
         public void TrySet<T>(Param<T> param)
         {
             if (param.optional && !configurationSection.GetChildren().Any(x => x.Key == param.inputParam.Name))
             {
-                param.SetValue(param.defaultValue);
             }
             else
             {

@@ -11,6 +11,8 @@ namespace GalacticWasteManagement.In
             this.optForDefaults = optForDefaults;
         }
 
+        public string Name => "Console";
+
         public void TrySet<T>(Param<T> param)
         {
             while (true)
@@ -18,14 +20,13 @@ namespace GalacticWasteManagement.In
                 string candidate = null;
                 if ((param.optional && !optForDefaults) || !param.optional)
                 {
-                    Console.WriteLine($"Please provide value for {(param.optional ? "(optional) " : "")}parameter '{param.inputParam.Name}'.{(param.optional ? $" (default: '{param.defaultValue}')" : "")}");
+                    Console.WriteLine($"Please provide value for {(param.optional ? "(optional) " : "")}parameter '{param.inputParam.Name}'.{(param.optional ? $" (Leave empty for default '{param.defaultValue}')" : "")}");
                     candidate = Console.ReadLine();
                 }
                 try
                 {
                     if (string.IsNullOrEmpty(candidate) && param.optional)
                     {
-                        param.SetValue(param.defaultValue);
                         return;
                     }
                     param.SetValue(param.inputParam.Parse(candidate));
