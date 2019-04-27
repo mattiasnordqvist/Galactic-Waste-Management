@@ -56,6 +56,10 @@ You can configure how parameters are passed to the different modes (see below ab
 Console window or through *Update*-method. Parameters passed through *Update* will not need to be passed through Console.
 Input is changed through .Parameters.SetInput(). *ConsoleInput* and *ConfigInput* is provided by Galactic Waste Manager. *MainArgsInput* is probably coming someday.
 
+There are also some parameters used by Galactic Waste Manager regardless of mode. See below how they can be used.
+* skip-create, optional boolean, default false. If true, will assume database exist and not attempt creating one. Must be true if you do not have access to master database.
+* ensure-db-exists, optional boolean, default false. If skip-create is true, you can set this to true as well to halt execution early if database happens to not exist.
+
 ##### ConsoleInput
 Since *ConsoleInput* uses the Console, it is not a very good input type when running migrations on server etc. In those cases, all parameters should be provided through the *Update*-method or a *ConfigInput*.
 
@@ -75,7 +79,11 @@ Retrieves parameters from a ConfigSection. Typical usage might look like this:
     "BrownField": {
       "clean": false,
       "source": "C:\\Program Files\\Microsoft SQL Server\\MSSQL13.MSSQLSERVER\\MSSQL\\Backup\\MyBackupFile.bak"
-    }
+    },
+    "LiveField": {
+      "skip-create": true,
+      "ensure-db-exists": true
+    },
   }
 }
 
@@ -213,10 +221,6 @@ There you go!
 
 One of the modes of Galactic Waste Management is GreenField. This mode is used when you are developing a database from scratch.
 In GreenField, scripts are executed like this.
-
-#### Create
-Script of ScriptType *Create* are run if a database does not exist. There is typically only one script here and it creates the database.
-//TODO: Let user configure how to check if database exist.
 
 #### Initialize
 Script of ScriptType *Initialize* are run if the database was just created or if it was just cleaned (more on that later).
