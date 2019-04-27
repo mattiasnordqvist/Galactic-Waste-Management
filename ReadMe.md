@@ -91,6 +91,7 @@ Input is changed through .Parameters.SetInput(). *ConsoleInput* and *ConfigInput
 There are also some parameters used by Galactic Waste Manager regardless of mode. See below how they can be used.
 * skip-create, optional boolean, default false. If true, will assume database exist and not attempt creating one. Must be true if you do not have access to master database.
 * ensure-db-exists, optional boolean, default false. If skip-create is true, you can set this to true as well to halt execution early if database happens to not exist.
+* transaction-per-script, optional boolean, default false. If true, runs each migration script in its own transaction.
 
 ##### ConsoleInput
 Since *ConsoleInput* uses the Console, it is not a very good input type when running migrations on server etc. In those cases, all parameters should be provided through the *Update*-method or a *ConfigInput*.
