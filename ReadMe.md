@@ -18,6 +18,39 @@ This package is supposed to replace FluentMigrator, DbUp or RoundhousE or whatev
 
 Soooo, I felt that I'm done creating garbage migration scripts that are not working the way I want... Welcome to Galactic Waste Management.
 
+- [Galactic Waste Management](#galactic-waste-management)
+  * [Quickstart](#quickstart)
+  * [Configuration](#configuration)
+    + [Environment](#environment)
+      - [Logging](#logging)
+      - [Output](#output)
+      - [Parameters](#parameters)
+        * [ConsoleInput](#consoleinput)
+        * [ConfigInput](#configinput)
+    + [Project Settings](#project-settings)
+      - [Versioning](#versioning)
+      - [ScriptProviders](#scriptproviders)
+    + [Migration Settings](#migration-settings)
+      - [Mode (required)](#mode-required)
+      - [Parameters](#parameters-1)
+      - [ScriptVariables](#scriptvariables)
+  * [Implement you own *IScript*s, *IScriptProvider*s and *IScriptType*s](#implement-you-own-iscripts-iscriptproviders-and-iscripttypes)
+  * [Implement your own Mode](#implement-your-own-mode)
+  * [Implement your own VersioningStrategy](#implement-your-own-versioningstrategy)
+  * [How to do minor tweaks to the defaults (like drop/create/initialize)](#how-to-do-minor-tweaks-to-the-defaults-like-dropcreateinitialize)
+  * [Creating a new migrations release (going to production and brownfield)](#creating-a-new-migrations-release-going-to-production-and-brownfield)
+  * [Typical asp.net core usage](#typical-aspnet-core-usage)
+  * [Captain Data and how it can aid in insert and seed scripts](#captain-data-and-how-it-can-aid-in-insert-and-seed-scripts)
+  * [Details on built-in modes](#details-on-built-in-modes)
+    + [GreenField](#greenfield)
+      - [Initialize](#initialize)
+      - [vNext](#vnext)
+      - [RunIfChanged](#runifchanged)
+      - [Seed](#seed)
+      - [Drop](#drop)
+    + [LiveField](#livefield)
+    + [BrownField](#brownfield)
+
 # Galactic Waste Management
 
 ## Quickstart
