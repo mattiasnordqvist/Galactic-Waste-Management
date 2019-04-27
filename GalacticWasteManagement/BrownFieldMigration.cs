@@ -12,7 +12,7 @@ namespace GalacticWasteManagement
         public static readonly string Param_Source = "source";
         public static readonly string Param_Clean = "clean";
 
-        public BrownFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name) : base(projectSettings, logger, output, input, connection, transaction, name)
+        public BrownFieldMigration(GalacticWasteManager gwm, string name) : base(gwm, name)
         {
             AllowDrop = true;
 
@@ -65,8 +65,6 @@ namespace GalacticWasteManagement
                     await Restore(Source.Get());
                 }
             }
-
-            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
 
             // Get all migration scripts and schema-info
             var scripts = GetScripts(ScriptType.Migration);

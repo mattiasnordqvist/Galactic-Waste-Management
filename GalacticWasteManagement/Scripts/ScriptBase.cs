@@ -11,13 +11,13 @@ namespace GalacticWasteManagement.Scripts
     {
         private string _cachedHashedContent;
 
-        public async Task ApplyAsync(IConnection connection, Dictionary<string, string> scriptVariables)
+        public async Task ApplyAsync(ITransaction transaction, Dictionary<string, string> scriptVariables)
         {
             var batches = ScriptUtilities.SplitInBatches(Sql);
 
             foreach (var batch in batches)
             {
-                await connection.ExecuteScalarAsync(ScriptUtilities.ReplaceTokens(batch, scriptVariables));
+                await transaction.ExecuteScalarAsync(ScriptUtilities.ReplaceTokens(batch, scriptVariables));
             }
         }
 

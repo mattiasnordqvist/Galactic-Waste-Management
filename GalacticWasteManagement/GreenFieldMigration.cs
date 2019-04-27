@@ -1,14 +1,12 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using GalacticWasteManagement.Logging;
-using GalacticWasteManagement.Output;
 using JellyDust;
 
 namespace GalacticWasteManagement
 {
     public class GreenFieldMigration : MigrationBase
     {
-        public GreenFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name = "GreenField") : base(projectSettings, logger, output, input, connection, transaction, name)
+        public GreenFieldMigration(GalacticWasteManager galacticWasteManager, string name = "GreenField") : base(galacticWasteManager, name)
         {
             AllowDrop = true;
             Clean = Parameters.Optional(new InputBool("clean", "force database to clean"), false);
@@ -55,8 +53,6 @@ namespace GalacticWasteManagement
                 Logger.Log("Creating table for schema versioning.", "info");
                 await Initialize();
             }
-
-            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
 
             var comparisonVNext = await Compare("vNext", ScriptType.vNext);
 

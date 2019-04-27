@@ -5,9 +5,9 @@ namespace GalacticWasteManagement
     public class LiveFieldMigrationFactory : IMigrationFactory
     {
         public string Name { get; } = "LiveField";
-        public IMigration Create(GalacticWasteManager gwm, IConnection c, ITransaction t)
+        public IMigration Create(GalacticWasteManager gwm)
         {
-            return new LiveFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, gwm.Parameters, c, t, Name);
+            return new LiveFieldMigration(gwm, Name);
         }
     }
 }

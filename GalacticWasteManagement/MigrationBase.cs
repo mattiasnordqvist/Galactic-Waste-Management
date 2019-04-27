@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
 using GalacticWasteManagement.Scripts;
+using GalacticWasteManagement.SqlServer;
 using JellyDust;
 using JellyDust.Dapper;
 using StackExchange.Profiling;
@@ -13,26 +14,30 @@ namespace GalacticWasteManagement
 {
     public abstract class MigrationBase : IMigration
     {
-        protected IProjectSettings ProjectSettings { get; }
-        protected ILogger Logger { get; }
-        public IOutput Output { get; }
-        public IParameters Parameters { get; }
-        protected IConnection Connection { get; }
-        protected ITransaction Transaction { get; }
+        private TransactionManager _connectionManager;
+
+        protected IProjectSettings ProjectSettings => GalacticWasteManager.ProjectSettings;
+        protected ILogger Logger => GalacticWasteManager.Logger;
+        public IOutput Output => GalacticWasteManager.Output;
+        public IParameters Parameters => GalacticWasteManager.Parameters;
         protected bool AllowDrop { get; set; } = false;
         public string DatabaseName { get; set; }
 
+        public IConnection Connection => _connectionManager.Connection;
+
+        /// <summary>
+        /// Gets existing transaction, or maybe creates a new one, depending on transaction-per-script.
+        /// If you wanna be completely sure you reuse the very transaction you get when calling this property-getter,
+        /// store the result in a local variable, ok?
+        /// </summary>
+        public ITransaction Transaction => _connectionManager.Transaction;
         public Dictionary<string, string> ScriptVariables { get; set; }
+        public GalacticWasteManager GalacticWasteManager { get; }
         public string Name { get; }
 
-        public MigrationBase(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters parameters, IConnection connection, ITransaction transaction, string name)
+        public MigrationBase(GalacticWasteManager gwm, string name)
         {
-            Logger = logger;
-            Output = output;
-            Parameters = parameters;
-            Connection = connection;
-            Transaction = transaction;
-            ProjectSettings = projectSettings;
+            GalacticWasteManager = gwm;
             Name = name;
         }
         protected async Task Deprecate(List<SchemaVersionJournalEntry> deprecated, string version)
@@ -49,7 +54,7 @@ namespace GalacticWasteManagement
                 };
                 using (var step = Output.MiniProfiler.Step($"Journaling {script.Name}"))
                 {
-                    await Connection.ExecuteAsync("INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hash) values (@Version, @Type, @Name, @Applied, @Hash)", entry);
+                    await Transaction.ExecuteAsync("INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hash) values (@Version, @Type, @Name, @Applied, @Hash)", entry);
                 }
             }
         }
@@ -65,9 +70,10 @@ namespace GalacticWasteManagement
             foreach (var script in orderedScripts)
             {
                 Logger.Log($"Executing script '{script.Name}'", "info");
+                var sameTransaction = Transaction;
                 using (var step = Output.MiniProfiler.Step(script.Name))
                 {
-                    await script.ApplyAsync(Connection, ScriptVariables);
+                    await script.ApplyAsync(sameTransaction, ScriptVariables);
                 }
 
                 if (script.Type.IsJournaled)
@@ -83,7 +89,7 @@ namespace GalacticWasteManagement
                     };
                     using (var step = Output.MiniProfiler.Step($"Journaling {script.Name}"))
                     {
-                        await Connection.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hash) values (@Version, @Type, @Name, @Applied, @Hash)", nextSchemaJournalVersion);
+                        await sameTransaction.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hash) values (@Version, @Type, @Name, @Applied, @Hash)", nextSchemaJournalVersion);
                     }
 
                     lastVersion = nextSchemaJournalVersion;
@@ -103,34 +109,25 @@ namespace GalacticWasteManagement
 
         public async Task Restore(string sourceBak, string mdfLogicalName = null, string mdfPhysicalName = null, string ldfLogicalName = null, string ldfPhysicalName = null)
         {
-            var currentDb = Connection.DbConnection.Database;
-            Connection.DbConnection.ChangeDatabase("master");
-            try
-            {
-                var dbNames = await Connection.QueryAsync<DbFilesInfo>($@"
+            var masterConnection = new Connection(new ConnectionFactory(GalacticWasteManager.ConnectionStringBuilder.For("master").ConnectionString, Output));
+            var dbNames = await masterConnection.QueryAsync<DbFilesInfo>($@"
 SELECT f.name LogicalName,
 f.physical_name AS PhysicalName,
 f.type_desc TypeOfFile
 FROM sys.master_files f
 INNER JOIN sys.databases d ON d.database_id = f.database_id
-WHERE d.Name = '{currentDb}'");
+WHERE d.Name = '{DatabaseName}'");
 
-                var rows = dbNames.Single(x => x.TypeOfFile == "ROWS");
-                var log = dbNames.Single(x => x.TypeOfFile == "LOG");
+            var rows = dbNames.Single(x => x.TypeOfFile == "ROWS");
+            var log = dbNames.Single(x => x.TypeOfFile == "LOG");
 
-                await Connection.ExecuteAsync($@"
-RESTORE DATABASE [{currentDb}]
+            await masterConnection.ExecuteAsync($@"
+RESTORE DATABASE [{DatabaseName}]
 FROM DISK = '{sourceBak}'
 WITH REPLACE
 --,
 --WITH MOVE '{mdfLogicalName ?? rows.LogicalName}' TO '{mdfPhysicalName ?? rows.PhysicalName}',
 --MOVE '{ldfLogicalName ?? log.LogicalName}' TO '{ldfPhysicalName ?? log.PhysicalName}'");
-            }
-            finally
-            {
-                Connection.DbConnection.ChangeDatabase(currentDb);
-            }
-
         }
 
         public async Task<List<SchemaVersionJournalEntry>> GetSchema(string schemaVersion = null, IScriptType type = null)
@@ -199,6 +196,20 @@ SELECT NULL
         protected IEnumerable<IScript> GetScripts(ScriptType scriptType)
         {
             return ProjectSettings.ScriptProviders.SelectMany(x => x.GetScripts(scriptType)).OrderBy(x => x.Name);
+        }
+
+        public async Task ManageGalacticWaste()
+        {
+            using (var connectionManager = ManageConnection())
+            {
+                _connectionManager = connectionManager;
+                await ManageWaste();
+            }
+        }
+
+        private TransactionManager ManageConnection()
+        {
+            return new TransactionManager(GalacticWasteManager.ConnectionStringBuilder, Output, Parameters.Optional(new InputBool("transaction-per-script", ""), false).Get());
         }
 
         public abstract Task ManageWaste();

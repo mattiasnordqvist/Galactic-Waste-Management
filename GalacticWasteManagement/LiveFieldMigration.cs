@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using GalacticWasteManagement.Logging;
-using GalacticWasteManagement.Output;
-using HonestNamespace;
 using JellyDust;
 
 namespace GalacticWasteManagement
 {
     public class LiveFieldMigration : MigrationBase
     {
-        public LiveFieldMigration(IProjectSettings projectSettings, ILogger logger, IOutput output, IParameters input, IConnection connection, ITransaction transaction, string name = "LiveField") : base(projectSettings, logger, output, input, connection, transaction, name)
+        public LiveFieldMigration(GalacticWasteManager gwm, string name = "LiveField") : base(gwm, name)
         {
         }
 
@@ -36,8 +31,6 @@ namespace GalacticWasteManagement
             {
                 Logger.Log("Scripts found in vNext folder. vNext scripts will not be run.", "warning");
             }
-
-            var triggeringTransaction = Transaction.DbTransaction; // TODO: change this to be configurable
 
             // Get all migration scripts and schema-info
             var scripts = GetScripts(ScriptType.Migration);

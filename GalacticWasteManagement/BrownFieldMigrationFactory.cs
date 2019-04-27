@@ -5,9 +5,9 @@ namespace GalacticWasteManagement
     public class BrownFieldMigrationFactory : IMigrationFactory
     {
         public string Name { get; } = "BrownField";
-        public IMigration Create(GalacticWasteManager gwm, IConnection c, ITransaction t)
+        public IMigration Create(GalacticWasteManager gwm)
         {
-            return new BrownFieldMigration(gwm.ProjectSettings, gwm.Logger, gwm.Output, gwm.Parameters, c, t, Name);
+            return new BrownFieldMigration(gwm, Name);
         }
     }
 }

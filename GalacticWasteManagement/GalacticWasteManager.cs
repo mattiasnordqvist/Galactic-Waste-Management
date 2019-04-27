@@ -21,14 +21,14 @@ namespace GalacticWasteManagement
         public IOutput Output { get; set; }
         public IParameters Parameters { get; set; }
         public ILogger Logger { get; set; }
-        public static Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> MigratorFactories { get; private set; }
+        public static Dictionary<string, Func<GalacticWasteManager, IMigration>> MigratorFactories { get; private set; }
 
         static GalacticWasteManager()
         {
             var greenfield = new GreenFieldMigrationFactory();
             var liveField = new LiveFieldMigrationFactory();
             var brownField = new BrownFieldMigrationFactory();
-            MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IConnection, ITransaction, IMigration>> {
+            MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IMigration>> {
                 { greenfield.Name, greenfield.Create },
                 { liveField.Name, liveField.Create },
                 { brownField.Name, brownField.Create }
@@ -38,7 +38,7 @@ namespace GalacticWasteManagement
         protected GalacticWasteManager() { }
 
 
-        public async Task Update(Func<GalacticWasteManager, IConnection, ITransaction, IMigration> migratorFactory, Dictionary<string, object> parameters = null, Dictionary<string, string> scriptVariables = null)
+        public async Task Update(Func<GalacticWasteManager, IMigration> migratorFactory, Dictionary<string, object> parameters = null, Dictionary<string, string> scriptVariables = null)
         {
             try
             {
@@ -48,19 +48,15 @@ namespace GalacticWasteManagement
                 Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                 Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
 
-                using (var uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(ConnectionStringBuilder.ConnectionString, Output)))
-                {
-                    var migrator = migratorFactory(this, uow.Connection, uow.Transaction);
-                    migrator.Parameters.Supply(parameters);
-                    migrator.DatabaseName = DatabaseName;
-                    migrator.ScriptVariables = variables;
-                    Logger.Log($"Running {migrator.Name} mode", "important");
-                    await MaybeCreateDatabase();
-                    await migrator.ManageWaste();
-                    uow.Commit();
-                    Logger.Log("Galactic waste has been managed!", "success");
-                    Output.Dump();
-                }
+                var migrator = migratorFactory(this);
+                migrator.Parameters.Supply(parameters);
+                migrator.DatabaseName = DatabaseName;
+                migrator.ScriptVariables = variables;
+                Logger.Log($"Running {migrator.Name} mode", "important");
+                await MaybeCreateDatabase();
+                await migrator.ManageGalacticWaste();
+                Logger.Log("Galactic waste has been managed!", "success");
+                Output.Dump();
             }
             catch (Exception e)
             {
