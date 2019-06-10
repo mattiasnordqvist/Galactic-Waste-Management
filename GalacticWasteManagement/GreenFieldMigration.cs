@@ -1,23 +1,20 @@
-﻿using System.Linq;
+﻿using SuperNotUnderstandableInputHandling;
+using System.Linq;
 using System.Threading.Tasks;
-using JellyDust;
 
 namespace GalacticWasteManagement
 {
     public class GreenFieldMigration : MigrationBase
     {
-        public GreenFieldMigration(GalacticWasteManager galacticWasteManager, string name = "GreenField") : base(galacticWasteManager, name)
+        public GreenFieldMigration()
         {
             AllowDrop = true;
-            Clean = Parameters.Optional(new InputBool("clean", "force database to clean"), false);
-            
+            Name = "GreenField";
         }
 
-        public Param<bool> Clean { get; }
+        public Param<bool> Clean => Parameters.Optional(new InputBool("clean", "force database to clean"), false);
 
         /// <summary>
-        /// criterias for creating database: 
-        /// * Database does not exist
         /// criterias for cleaning database (any):
         /// * Schema-version-table does exist &&
         /// * (Clean-parameter was set ||

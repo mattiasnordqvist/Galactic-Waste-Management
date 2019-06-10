@@ -1,13 +1,13 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using JellyDust;
 
 namespace GalacticWasteManagement
 {
     public class LiveFieldMigration : MigrationBase
     {
-        public LiveFieldMigration(GalacticWasteManager gwm, string name = "LiveField") : base(gwm, name)
+        public LiveFieldMigration()
         {
+            Name = "LiveField";
         }
 
         /// <summary>

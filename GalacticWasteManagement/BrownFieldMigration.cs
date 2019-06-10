@@ -1,9 +1,6 @@
-﻿using System.Linq;
+﻿using SuperNotUnderstandableInputHandling;
+using System.Linq;
 using System.Threading.Tasks;
-using GalacticWasteManagement.Logging;
-using GalacticWasteManagement.Output;
-using HonestNamespace;
-using JellyDust;
 
 namespace GalacticWasteManagement
 {
@@ -12,16 +9,14 @@ namespace GalacticWasteManagement
         public static readonly string Param_Source = "source";
         public static readonly string Param_Clean = "clean";
 
-        public BrownFieldMigration(GalacticWasteManager gwm, string name) : base(gwm, name)
+        public BrownFieldMigration()
         {
+            Name = "BrownField";
             AllowDrop = true;
-
-            Clean = Parameters.Optional(new InputBool(Param_Clean, "force restore from backup or clean if no source specified"), false);
-            Source = Parameters.Optional(new InputFile(Param_Source, ".bak-file to restore from", true), null);
         }
 
-        public Param<bool> Clean { get; }
-        public Param<string> Source { get; }
+        public Param<bool> Clean => Parameters.Optional(new InputBool(Param_Clean, "force restore from backup or clean if no source specified"), false);
+        public Param<string> Source => Parameters.Optional(new InputFile(Param_Source, ".bak-file to restore from", true), null);
 
         /// <summary>
         /// If db does not exist, create and initialize

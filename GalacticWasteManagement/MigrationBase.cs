@@ -9,6 +9,7 @@ using GalacticWasteManagement.SqlServer;
 using JellyDust;
 using JellyDust.Dapper;
 using StackExchange.Profiling;
+using SuperNotUnderstandableInputHandling;
 
 namespace GalacticWasteManagement
 {
@@ -32,14 +33,9 @@ namespace GalacticWasteManagement
         /// </summary>
         public ITransaction Transaction => _connectionManager.Transaction;
         public Dictionary<string, string> ScriptVariables { get; set; }
-        public GalacticWasteManager GalacticWasteManager { get; }
-        public string Name { get; }
+        public GalacticWasteManager GalacticWasteManager { get; set; }
+        public string Name { get; set; }
 
-        public MigrationBase(GalacticWasteManager gwm, string name)
-        {
-            GalacticWasteManager = gwm;
-            Name = name;
-        }
         protected async Task Deprecate(List<SchemaVersionJournalEntry> deprecated, string version)
         {
             foreach (var script in deprecated)

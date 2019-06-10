@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
-using GalacticWasteManagement.In;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
 using GalacticWasteManagement.SqlServer;
 using HonestNamespace;
 using JellyDust;
 using JellyDust.Dapper;
+using SuperNotUnderstandableInputHandling;
 
 namespace GalacticWasteManagement
 {
@@ -25,14 +25,15 @@ namespace GalacticWasteManagement
 
         static GalacticWasteManager()
         {
-            var greenfield = new GreenFieldMigrationFactory();
-            var liveField = new LiveFieldMigrationFactory();
-            var brownField = new BrownFieldMigrationFactory();
-            MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IMigration>> {
-                { greenfield.Name, greenfield.Create },
-                { liveField.Name, liveField.Create },
-                { brownField.Name, brownField.Create }
-            };
+            MigratorFactories = new Dictionary<string, Func<GalacticWasteManager, IMigration>>();
+            AddMigratorSingleton(new GreenFieldMigration());
+            AddMigratorSingleton(new LiveFieldMigration());
+            AddMigratorSingleton(new BrownFieldMigration());
+        }
+
+        static void AddMigratorSingleton(IMigration migration)
+        {
+            MigratorFactories[migration.Name] = x => { migration.GalacticWasteManager = x; return migration; };
         }
 
         protected GalacticWasteManager() { }
@@ -128,7 +129,7 @@ namespace GalacticWasteManagement
                 Logger = new ConsoleLogger(connectionStringBuilder.InitialCatalog),
                 Output = new NullOutput(),
             };
-            gwm.Parameters = new Parameters(new ConsoleInput(true), gwm);
+            gwm.Parameters = new LoggingParameters(new Parameters(new ConsoleInput(true)), gwm.Logger);
 
             return gwm;
         }
