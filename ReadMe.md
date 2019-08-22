@@ -171,7 +171,7 @@ Will by default contain your database name (as provided in connectionstring) on 
 // TODO Document
 
 ## Implement your own VersioningStrategy
-The default versioning strategy is to use major and minor version to interpret which versions belong together. Tou can override this behavior by providing your own migration versioning. Here's an example of how to implement your own versioning. You start with a class to descibe a version that can be compared to other versions. In this case a version that attempts to diffrentiate versions according to semver 2.0:
+The default versioning strategy is to use major and minor version to interpret which versions belong together. You can override this behavior by providing your own migration versioning. Here's an example of how to implement your own versioning. You start with a class to descibe a version that can be compared to other versions. In this example we attempt to diffrentiate versions according to semver 2.0:
 ```csharp
 public class Semver2Version : DefaultVersion, IComparable<Semver2Version>
 {
@@ -218,7 +218,7 @@ public class Semver2Version : DefaultVersion, IComparable<Semver2Version>
 ```
 Then you need a versioning class to handle your new version, like this:
 ```csharp
-public class Semver2MigrationVersioning : CustomVersionMigrationVersioningBase<Semver2Version>
+public class Semver2Versioning : CustomVersionMigrationVersioningBase<Semver2Version>
 {
     private Regex embeddedScriptNameVersionRegexp = new Regex(@"\.(?<maj>\d{1,})\.(?<min>\d{1,})\.(?<patch>\d{1,})(?<pre>rc|beta|alpha)?\.(?<build>\d{1,})?");
     private Regex versionRegex = new Regex(@"(?<maj>\d{1,})\.(?<min>\d{1,})\.(?<patch>\d{1,})?(?<pre>-rc|-beta|-alpha)?\.?(?<build>\d{1,})?");
@@ -252,12 +252,12 @@ public class Semver2MigrationVersioning : CustomVersionMigrationVersioningBase<S
     }
 }
 ```
-the last step is replace GWM's default versioning scheme with your your own. To do this you create a custom project setting which you can then use to create a migrator:
+the last step is replace GWM's default versioning scheme with your your own. To do this you can create a custom project setting which you can then use to create a migrator:
 ```csharp
 private class MigrationProjectSettings : ProjectSettings
 {
     public MigrationProjectSettings() : base(
-        new Semver2MigrationVersioning(),
+        new Semver2Versioning(),
         new List<IScriptProvider>
         {
             new BuiltInScriptsScriptProvider(),

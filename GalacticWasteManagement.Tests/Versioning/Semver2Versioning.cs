@@ -4,7 +4,7 @@ using Version = GalacticWasteManagement.Scripts.Version;
 
 namespace GalacticWasteManagement.Tests.Versioning
 {
-    public class Semver2MigrationVersioning : CustomVersionMigrationVersioningBase<Semver2Version>
+    public class Semver2Versioning : CustomVersionMigrationVersioningBase<Semver2Version>
     {
         private Regex embeddedScriptNameVersionRegexp = new Regex(@"\.(?<maj>\d{1,})\.(?<min>\d{1,})\.(?<patch>\d{1,})(?<pre>rc|beta|alpha)?\.(?<build>\d{1,})?");
         private Regex versionRegex = new Regex(@"(?<maj>\d{1,})\.(?<min>\d{1,})\.(?<patch>\d{1,})?(?<pre>-rc|-beta|-alpha)?\.?(?<build>\d{1,})?");

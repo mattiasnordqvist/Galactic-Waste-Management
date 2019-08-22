@@ -7,7 +7,7 @@ namespace GalacticWasteManagement.Tests.Versioning
 {
     public class VersioningTests
     {
-        private static Semver2MigrationVersioning Versioning = new Semver2MigrationVersioning();
+        private static Semver2Versioning Versioning = new Semver2Versioning();
 
         [Test]
         public void TestEmbeddedScriptToCustomVersionComparisons()
