@@ -171,7 +171,7 @@ Will by default contain your database name (as provided in connectionstring) on 
 // TODO Document
 
 ## Implement your own VersioningStrategy
-The default versioning strategy is to use major and minor version to interpret which versions belong together. You can override this behavior by providing your own migration versioning. Here's an example of how to implement your own versioning. You start with a class to descibe a version that can be compared to other versions. In this example we attempt to diffrentiate versions according to semver 2.0:
+The default versioning strategy is to use major and minor version to interpret which versions belong together. You can override this behavior by providing your own migration versioning. Here's an example of how to implement your own versioning. You start with a class to describe a version that can be compared to other versions. In this example we attempt to differentiate versions according to semver 2.0:
 ```csharp
 public class Semver2Version : DefaultVersion, IComparable<Semver2Version>
 {
@@ -252,7 +252,7 @@ public class Semver2Versioning : CustomVersionMigrationVersioningBase<Semver2Ver
     }
 }
 ```
-the last step is replace GWM's default versioning scheme with your your own. To do this you can create a custom project setting which you can then use to create a migrator:
+the last step is replace GWM's default versioning scheme with your your own. To do this you can create a custom project setting which you can then use to create a migrator (example below) or you could set the MigrationVersioning property of your ProjectSettings object.
 ```csharp
 private class MigrationProjectSettings : ProjectSettings
 {
