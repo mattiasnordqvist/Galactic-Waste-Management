@@ -1,4 +1,5 @@
 This package is supposed to replace FluentMigrator, DbUp or RoundhousE or whatever you're using. All of these frameworks made it hard for me in some way so I decided to roll my own. 
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
 
 #### Problems with FluentMigrator
 * I don't see the point in not writing sql in sql.
@@ -392,3 +393,19 @@ RunIfChanged-scripts will be run as in GreenField. However, a new situation in L
 When you continue development after your first release, you want to run in BrownField mode. Brownfield accepts a Source-parameter, which should point to a .bak-file from which you can restore your database. This backup should've been taken from the live database at some point.
 BrownField works pretty much like GreenField, but if Source is set, it will *Restore* database instead of *Clean* it. After restore or clean, all Migration-, vNext-, RunfIfchanged- and Seed-scripts will be evaluated for execution.
 New migration scripts should again go in the *vNext* folder. Scripts in the *Migration*-folder are considered *cemented* and you are not allowed to change them. Changing them will result in an error. THESE 
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/hampustoren"><img src="https://avatars0.githubusercontent.com/u/12973225?v=4" width="100px;" alt="hampustoren"/><br /><sub><b>hampustoren</b></sub></a><br /><a href="https://github.com/mattiasnordqvist/Galactic-Waste-Management/issues?q=author%3Ahampustoren" title="Bug reports">🐛</a></td>
+  </tr>
+</table>
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
