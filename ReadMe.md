@@ -171,7 +171,102 @@ Will by default contain your database name (as provided in connectionstring) on 
 // TODO Document
 
 ## Implement your own VersioningStrategy
-// TODO Document
+The default versioning strategy is to use major and minor version to interpret which versions belong together. You can override this behavior by providing your own migration versioning. Here's an example of how to implement your own versioning. You start with a class to describe a version that can be compared to other versions. In this example we attempt to differentiate versions according to semver 2.0:
+```csharp
+public class Semver2Version : DefaultVersion, IComparable<Semver2Version>
+{
+    public Semver2Version(string major, string minor, string patch, string pre, string build)
+    {
+        Major = int.Parse(major);
+        Minor = int.Parse(minor);
+        Patch = int.Parse(string.IsNullOrEmpty(patch) ? "0" : patch);
+        PreRelease = string.IsNullOrEmpty(pre) 
+            ? PreReleaseType.None
+            : (PreReleaseType)Enum.Parse(typeof(PreReleaseType), pre.TrimStart('-'), true);
+        Build = int.Parse(string.IsNullOrEmpty(build) ? "0" : build);
+    }
+
+    public int Patch { get; }
+    public PreReleaseType PreRelease { get; }
+    public int Build { get; }
+
+    public int CompareTo(Semver2Version other)
+    {
+        var majorMinorComparison = base.CompareTo(other);
+        if (majorMinorComparison == 0)
+        {
+            var patchComparison = Patch.CompareTo(other.Patch);
+            if (patchComparison == 0)
+            {
+                var preReleaseComparison = PreRelease.CompareTo(other.PreRelease);
+                if (preReleaseComparison == 0)
+                {
+                    return Build.CompareTo(other.Build);
+                }
+                else
+                {
+                    return preReleaseComparison;
+                }
+            }
+
+            return patchComparison;
+        }
+
+        return majorMinorComparison;
+    }
+}
+```
+Then you need a versioning class to handle your new version, like this:
+```csharp
+public class Semver2Versioning : CustomVersionMigrationVersioningBase<Semver2Version>
+{
+    private Regex embeddedScriptNameVersionRegexp = new Regex(@"\.(?<maj>\d{1,})\.(?<min>\d{1,})\.(?<patch>\d{1,})(?<pre>rc|beta|alpha)?\.(?<build>\d{1,})?");
+    private Regex versionRegex = new Regex(@"(?<maj>\d{1,})\.(?<min>\d{1,})\.(?<patch>\d{1,})?(?<pre>-rc|-beta|-alpha)?\.?(?<build>\d{1,})?");
+
+    public override Semver2Version ToCustomVersion(IScript script)
+    {
+        var match = embeddedScriptNameVersionRegexp.Match(script.Name.Replace("_", string.Empty));
+        var major = match.Groups["maj"].Value;
+        var minor = match.Groups["min"].Value;
+        var patch = match.Groups["patch"].Value;
+        var pre = match.Groups["pre"].Value;
+        var build = match.Groups["build"].Value;
+        return new Semver2Version(major, minor, patch, pre, build);
+    }
+
+    public override Version ToVersion(Semver2Version version)
+    {
+        var preRelease = version.PreRelease == PreReleaseType.None ? string.Empty : $"-{version.PreRelease.ToString().ToLower()}";
+        return new Version($"{version.Major}.{version.Minor}.{version.Patch}{preRelease}.{version.Build}");
+    }
+
+    public override Semver2Version FromVersion(Version version)
+    {
+        var match = versionRegex.Match(version.Value);
+        var major = match.Groups["maj"].Value;
+        var minor = match.Groups["min"].Value;
+        var patch = match.Groups["patch"].Value;
+        var pre = match.Groups["pre"].Value;
+        var build = match.Groups["build"].Value;
+        return new Semver2Version(major, minor, patch, pre, build);
+    }
+}
+```
+the last step is replace GWM's default versioning scheme with your your own. To do this you can create a custom project setting which you can then use to create a migrator (example below) or you could set the MigrationVersioning property of your ProjectSettings object.
+```csharp
+private class MigrationProjectSettings : ProjectSettings
+{
+    public MigrationProjectSettings() : base(
+        new Semver2Versioning(),
+        new List<IScriptProvider>
+        {
+            new BuiltInScriptsScriptProvider(),
+            new EmbeddedScriptProvider(Assembly.GetAssembly(typeof(MigrationAssemblyPlaceholder)), "Scripts")
+        }) { }
+}
+
+var migrator = GalacticWasteManager.Create(new MigrationProjectSettings(), connectionString);
+```
 
 ## How to do minor tweaks to the defaults (like drop/create/initialize)
 // TODO Document
