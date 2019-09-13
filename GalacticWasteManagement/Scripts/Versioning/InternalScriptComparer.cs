@@ -12,9 +12,9 @@ namespace GalacticWasteManagement.Scripts
             getVersionToCompare = p;
         }
 
-        public int Compare(Version x, Version y)
-        {
-            return getVersionToCompare(x).CompareTo(getVersionToCompare(y));
-        }
+        public int Compare(Version x, Version y) =>
+            x != null && y != null
+                ? getVersionToCompare(x).CompareTo(getVersionToCompare(y))
+                : (x is null ? -1 : 0) + (y is null ? 1 : 0);
     }
 }
