@@ -1,5 +1,5 @@
 This package is supposed to replace FluentMigrator, DbUp or RoundhousE or whatever you're using. All of these frameworks made it hard for me in some way so I decided to roll my own. 
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors)
 
 #### Problems with FluentMigrator
 * I don't see the point in not writing sql in sql.
@@ -403,6 +403,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://github.com/hampustoren"><img src="https://avatars0.githubusercontent.com/u/12973225?v=4" width="100px;" alt="hampustoren"/><br /><sub><b>hampustoren</b></sub></a><br /><a href="https://github.com/mattiasnordqvist/Galactic-Waste-Management/issues?q=author%3Ahampustoren" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://www.carl-berg.se"><img src="https://avatars0.githubusercontent.com/u/209010?v=4" width="100px;" alt="Carl Berg"/><br /><sub><b>Carl Berg</b></sub></a><br /><a href="#ideas-carl-berg" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/mattiasnordqvist/Galactic-Waste-Management/commits?author=carl-berg" title="Documentation">📖</a></td>
   </tr>
 </table>
 
