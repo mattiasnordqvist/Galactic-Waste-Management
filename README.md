@@ -70,10 +70,9 @@ static async Task Main(string[] args)
 
 5. Create a folder called Scripts in your project
 6. Create three folders inside the newly created Scripts folder, named *RunIfChanged*, *Seed* and *vNext*
-7. Inside the *vNext*-folder, create another folder called *1.0* (for version 1.0)
-8. Create a sql file that creates some tables or something and put it into the vNext folder.
-9. Set build action of that file to *Embedded resource*.
-10. Done! Run!
+7. Create a sql file that creates some tables or something and put it into the vNext folder.
+8. Set build action of that file to *Embedded resource*.
+9. Done! Run!
 
 ## Configuration
 
