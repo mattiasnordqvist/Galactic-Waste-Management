@@ -1,6 +1,6 @@
 ﻿namespace GalacticWasteManagement.Scripts.ScriptProviders
 {
-    public class CreateSchemaVersionJournal : ScriptBase
+    public class CreateSchemaVersionJournal : SqlStringBasedScriptBase
     {
         public override string Name => nameof(CreateSchemaVersionJournal);
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using GalacticWasteManagement.Utilities;
@@ -7,9 +8,13 @@ using JellyDust.Dapper;
 
 namespace GalacticWasteManagement.Scripts
 {
-    public abstract class ScriptBase : IScript
+    public abstract class SqlStringBasedScriptBase : IScript
     {
         private string _cachedHashedContent;
+        public SqlStringBasedScriptBase()
+        {
+            GetHash = () => _cachedHashedContent ?? (_cachedHashedContent = Hashing.CreateHash(Sql));
+        }
 
         public async Task ApplyAsync(ITransaction transaction, Dictionary<string, string> scriptVariables)
         {
@@ -21,18 +26,10 @@ namespace GalacticWasteManagement.Scripts
             }
         }
 
-        public string GetHash()
-        {
-            if (_cachedHashedContent == null)
-            {
-                _cachedHashedContent = Hashing.CreateHash(Sql);
-            }
-            return _cachedHashedContent;
-        }
-
         public abstract string Sql { get; }
         public abstract string Name { get; }
         public abstract IScriptType Type { get; }
-
+        public Func<string> GetHash { set; get; }
+        
     }
 }

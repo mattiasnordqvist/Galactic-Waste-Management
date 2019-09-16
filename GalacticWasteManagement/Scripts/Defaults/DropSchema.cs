@@ -1,6 +1,6 @@
 ﻿namespace GalacticWasteManagement.Scripts.ScriptProviders
 {
-    public class DropSchema : ScriptBase
+    public class DropSchema : SqlStringBasedScriptBase
     {
         public override string Sql => @"
 declare @n char(1)

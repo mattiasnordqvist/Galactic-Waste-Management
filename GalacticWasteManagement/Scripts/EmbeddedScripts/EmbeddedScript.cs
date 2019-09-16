@@ -1,7 +1,7 @@
 ﻿namespace GalacticWasteManagement.Scripts.EmbeddedScripts
 {
 
-    public class EmbeddedScript : ScriptBase
+    public class EmbeddedScript : SqlStringBasedScriptBase
     {
         private ResourceFile _resourceFile;
         private IScriptType _type;

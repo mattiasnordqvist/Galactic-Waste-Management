@@ -1,4 +1,5 @@
 ﻿using GalacticWasteManagement.Scripts;
+using GalacticWasteManagement.Scripts.EmbeddedScripts;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,8 @@ namespace GalacticWasteManagement.Tests.Scripts
         [Test]
         public void SplitInBatches_HappyDays()
         {
+
+
             var somethingToSplit = @"SELECT * FROM Table1
               GO
               SELECT * FROM Table2";

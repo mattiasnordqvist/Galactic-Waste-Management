@@ -67,7 +67,7 @@ namespace GalacticWasteManagement.Tests.Versioning
 
         private Semver2Version FromDB(string value) => Versioning.FromVersion(new Version(value));
 
-        private class TestScript : ScriptBase
+        private class TestScript : SqlStringBasedScriptBase
         {
             public TestScript(string embeddedScriptNamespace)
             {
