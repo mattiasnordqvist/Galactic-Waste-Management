@@ -21,7 +21,7 @@ namespace GalacticWasteManagement
 
         public IDbConnection CreateOpenConnection()
         {
-            MiniProfiler mp = new MiniProfiler($"{Assembly.GetEntryAssembly().GetName()} - DatabaseUpdater", MiniProfiler.DefaultOptions);
+            MiniProfiler mp = new MiniProfiler($"{Assembly.GetEntryAssembly()?.GetName()} - DatabaseUpdater", MiniProfiler.DefaultOptions);
             (output ?? (output = new NullOutput())).MiniProfiler = mp;
             var connection = new StackExchange.Profiling.Data.ProfiledDbConnection(CreteConnection(), mp);
             connection.Disposed += (_, __) => { mp.Stop(); };
