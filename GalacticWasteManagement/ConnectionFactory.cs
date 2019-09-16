@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection;
 using GalacticWasteManagement.Output;
@@ -22,7 +23,7 @@ namespace GalacticWasteManagement
         {
             MiniProfiler mp = new MiniProfiler($"{Assembly.GetEntryAssembly().GetName()} - DatabaseUpdater", MiniProfiler.DefaultOptions);
             (output ?? (output = new NullOutput())).MiniProfiler = mp;
-            var connection = new StackExchange.Profiling.Data.ProfiledDbConnection(new SqlConnection(connectionString), mp);
+            var connection = new StackExchange.Profiling.Data.ProfiledDbConnection(CreteConnection(), mp);
             connection.Disposed += (_, __) => { mp.Stop(); };
 
             using (mp?.Ignore())
@@ -32,5 +33,7 @@ namespace GalacticWasteManagement
 
             return connection;
         }
+
+        protected internal virtual DbConnection CreteConnection() => new SqlConnection(connectionString);
     }
 }
