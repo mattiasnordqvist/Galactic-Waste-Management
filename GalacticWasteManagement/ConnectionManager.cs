@@ -9,14 +9,14 @@ namespace GalacticWasteManagement
     {
         private readonly SqlConnectionStringBuilder sqlConnectionStringBuilder;
         private readonly IOutput output;
-        private readonly bool singleTransaction;
+        private readonly bool transactionPerScript;
         IUnitOfWork _uow = null;
 
-        public TransactionManager(SqlConnectionStringBuilder sqlConnectionStringBuilder, IOutput output, bool singleTransaction = true)
+        public TransactionManager(SqlConnectionStringBuilder sqlConnectionStringBuilder, IOutput output, bool transactionPerScript = false)
         {
             this.sqlConnectionStringBuilder = sqlConnectionStringBuilder;
             this.output = output;
-            this.singleTransaction = singleTransaction;
+            this.transactionPerScript = transactionPerScript;
         }
         public ITransaction Transaction
         {
@@ -26,7 +26,7 @@ namespace GalacticWasteManagement
                 {
                     _uow = new UnitOfWork(new TransactionFactory(), new ConnectionFactory(sqlConnectionStringBuilder.ConnectionString, output));
                 }
-                if (!singleTransaction)
+                if (transactionPerScript)
                 {
                     if (_uow != null)
                     {

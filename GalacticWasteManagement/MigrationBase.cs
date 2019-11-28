@@ -206,10 +206,7 @@ SELECT NULL
             }
         }
 
-        private TransactionManager ManageConnection()
-        {
-            return new TransactionManager(GalacticWasteManager.ConnectionStringBuilder, Output, Parameters.Optional(new InputBool("transaction-per-script", ""), false).Get());
-        }
+        private TransactionManager ManageConnection() => new TransactionManager(GalacticWasteManager.ConnectionStringBuilder, Output, Parameters.Optional(new InputBool("transaction-per-script", ""), false).Get());
 
         public abstract Task ManageWaste();
     }
