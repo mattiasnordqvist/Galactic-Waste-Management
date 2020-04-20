@@ -104,7 +104,7 @@ namespace GalacticWasteManagement
             await Update(MigratorFactories[mode], parameters, scriptVariables);
         }
 
-        public static GalacticWasteManager Create<T>(string connectionString, Action<IProjectSettings> configure = null)
+        public static GalacticWasteManager Create<T>(string connectionString, Action<ProjectSettings> configure = null)
         {
             var settings = new DefaultProjectSettings<T>();
             configure?.Invoke(settings);

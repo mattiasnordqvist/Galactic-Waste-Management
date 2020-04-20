@@ -13,7 +13,6 @@ namespace GalacticWasteManagement
         }
         public IMigrationVersioning MigrationVersioning { get; set; }
         public List<IScriptProvider> ScriptProviders { get; set; }
-
         public IScriptParser ScriptParser { get; set; }
     }
 }
