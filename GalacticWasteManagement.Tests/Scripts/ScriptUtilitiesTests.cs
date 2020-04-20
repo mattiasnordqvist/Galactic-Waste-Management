@@ -1,10 +1,6 @@
-﻿using GalacticWasteManagement.Scripts;
-using GalacticWasteManagement.Scripts.EmbeddedScripts;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
+﻿using NUnit.Framework;
+using Shouldly;
 using System.Linq;
-using System.Text;
 
 namespace GalacticWasteManagement.Tests.Scripts
 {
@@ -56,6 +52,13 @@ namespace GalacticWasteManagement.Tests.Scripts
             var somethingToSplit = @"SELECT * FROM Table1 WHERE Name = 'é du go LR?'";
             var actual = new SqlServer.MsSql120ScriptParser().SplitInBatches(somethingToSplit);
             Assert.AreEqual(1, actual.Count());
+        }
+
+        [Test]
+        public void CreateOrAlterSyntax_IsAllowed_With_MsSql130ScriptParser()
+        {
+            var sql = @"CREATE OR ALTER VIEW [dbo].[CompanyNames] AS SELECT Company.Name FROM Company";
+            Should.NotThrow(() =>new SqlServer.MsSql130ScriptParser().SplitInBatches(sql));
         }
     }
 }
