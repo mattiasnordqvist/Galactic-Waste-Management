@@ -4,10 +4,10 @@ namespace GalacticWasteManagement.Scripts
 {
     public class ScriptContext : IScriptContext
     {
-        public ScriptContext(IScriptParser parser)
+        public ScriptContext(IScriptParser parser, IDictionary<string, string> variables = null)
         {
             Parser = parser;
-            Variables = new Dictionary<string, string>();
+            Variables = variables ?? new Dictionary<string, string>();
         }
 
         public IScriptParser Parser { get; }

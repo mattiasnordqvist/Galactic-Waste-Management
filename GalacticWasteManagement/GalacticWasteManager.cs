@@ -44,7 +44,7 @@ namespace GalacticWasteManagement
         {
             try
             {
-                var context = new ScriptContext(ProjectSettings.ScriptParser);
+                var context = new ScriptContext(ProjectSettings.ScriptParser, scriptVariables);
                 context.Variables.Add("DbName", DatabaseName);
 
                 Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
@@ -104,9 +104,11 @@ namespace GalacticWasteManagement
             await Update(MigratorFactories[mode], parameters, scriptVariables);
         }
 
-        public static GalacticWasteManager Create<T>(string connectionString)
+        public static GalacticWasteManager Create<T>(string connectionString, Action<IProjectSettings> configure = null)
         {
-            return Create(new DefaultProjectSettings<T>(), connectionString);
+            var settings = new DefaultProjectSettings<T>();
+            configure?.Invoke(settings);
+            return Create(settings, connectionString);
         }
 
         public static GalacticWasteManager Create(IProjectSettings projectSettings, string connectionString)
