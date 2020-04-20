@@ -8,41 +8,46 @@ namespace GalacticWasteManagement.SqlServer
 {
     public class MsSqlScriptParser : IScriptParser
     {
-        public List<string> SplitInBatches(string script)
+        private readonly TSqlParser _parser;
+        private readonly SqlScriptGenerator _sqlScriptGenerator;
+
+        public MsSqlScriptParser(TSqlParser parser, SqlScriptGenerator sqlScriptGenerator)
         {
-            var parser = new TSql120Parser(false);
+            _parser = parser;
+            _sqlScriptGenerator = sqlScriptGenerator;
+        }
+
+        public IList<string> SplitInBatches(string script)
+        {
             using (StringReader sr = new StringReader(script))
             {
-                var fragment = parser.Parse(sr, out IList<ParseError> errors);
+                var fragment = _parser.Parse(sr, out IList<ParseError> errors);
                 if (errors.Any())
                 {
                     throw new System.Exception(errors.First().Message);
                 }
 
-                return GetBatches(fragment).ToList();
+                return GetBatches(fragment)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToList();
             }
         }
 
-        private static IEnumerable<string> GetBatches(TSqlFragment fragment)
+        private IEnumerable<string> GetBatches(TSqlFragment fragment)
         {
-            var sg = new Sql120ScriptGenerator();
             if (fragment is TSqlScript script)
             {
                 foreach (var batch in script.Batches)
                 {
-                    yield return ScriptFragment(sg, batch);
+                    _sqlScriptGenerator.GenerateScript(batch, out string batchScript);
+                    yield return batchScript;
                 }
             }
             else
             {
-                yield return ScriptFragment(sg, fragment);
+                _sqlScriptGenerator.GenerateScript(fragment, out string fragmentScript);
+                yield return fragmentScript;
             }
-        }
-
-        private static string ScriptFragment(SqlScriptGenerator sg, TSqlFragment fragment)
-        {
-            sg.GenerateScript(fragment, out string resultString);
-            return resultString;
         }
     }
 }

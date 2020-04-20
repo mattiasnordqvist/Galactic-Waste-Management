@@ -18,7 +18,7 @@ namespace GalacticWasteManagement.Tests.Scripts
             var somethingToSplit = @"SELECT * FROM Table1
               GO
               SELECT * FROM Table2";
-            var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
+            var actual = new SqlServer.MsSql120ScriptParser().SplitInBatches(somethingToSplit);
             Assert.AreEqual(2, actual.Count());
         }
 
@@ -26,7 +26,7 @@ namespace GalacticWasteManagement.Tests.Scripts
         public void SplitInBatches_HappyDays2()
         {
             var somethingToSplit = @"SELECT * FROM Table1";
-            var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
+            var actual = new SqlServer.MsSql120ScriptParser().SplitInBatches(somethingToSplit);
             Assert.AreEqual(1, actual.Count());
         }
 
@@ -36,7 +36,7 @@ namespace GalacticWasteManagement.Tests.Scripts
             var somethingToSplit = @"SELECT * FROM Table1;
               GO
               SELECT * FROM Table2";
-            var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
+            var actual = new SqlServer.MsSql120ScriptParser().SplitInBatches(somethingToSplit);
             Assert.AreEqual(2, actual.Count());
         }
 
@@ -46,7 +46,7 @@ namespace GalacticWasteManagement.Tests.Scripts
             var somethingToSplit = @"SELECT * FROM Table1;
               gO;
               SELECT * FROM Table2";
-            var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
+            var actual = new SqlServer.MsSql120ScriptParser().SplitInBatches(somethingToSplit);
             Assert.AreEqual(2, actual.Count());
         }
 
@@ -54,7 +54,7 @@ namespace GalacticWasteManagement.Tests.Scripts
         public void SplitInBatches_StringsShouldBeIgnored()
         {
             var somethingToSplit = @"SELECT * FROM Table1 WHERE Name = 'é du go LR?'";
-            var actual = ScriptUtilities.SplitInBatches(somethingToSplit);
+            var actual = new SqlServer.MsSql120ScriptParser().SplitInBatches(somethingToSplit);
             Assert.AreEqual(1, actual.Count());
         }
     }

@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
 using GalacticWasteManagement.Output;
+using GalacticWasteManagement.Scripts;
 using GalacticWasteManagement.SqlServer;
 using HonestNamespace;
 using JellyDust;
@@ -43,8 +44,8 @@ namespace GalacticWasteManagement
         {
             try
             {
-                var variables = scriptVariables ?? new Dictionary<string, string>();
-                variables.Add("DbName", DatabaseName);
+                var context = new ScriptContext(ProjectSettings.ScriptParser);
+                context.Variables.Add("DbName", DatabaseName);
 
                 Logger.Log(" #### GALACTIC WASTE MANAGER ENGAGED #### ", "unicorn");
                 Logger.Log($"Managing galactic waste in {DatabaseName}", "important");
@@ -52,7 +53,7 @@ namespace GalacticWasteManagement
                 var migrator = migratorFactory(this);
                 migrator.Parameters.Supply(parameters);
                 migrator.DatabaseName = DatabaseName;
-                migrator.ScriptVariables = variables;
+                migrator.ScriptContext = context;
                 Logger.Log($"Running {migrator.Name} mode", "important");
                 await MaybeCreateDatabase();
                 await migrator.ManageGalacticWaste();
