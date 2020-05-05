@@ -7,5 +7,6 @@ namespace GalacticWasteManagement
     {
         IMigrationVersioning MigrationVersioning { get; }
         List<IScriptProvider> ScriptProviders { get; }
+        IScriptParser ScriptParser { get; }
     }
 }

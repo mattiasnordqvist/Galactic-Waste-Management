@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using JellyDust;
 
@@ -10,6 +9,6 @@ namespace GalacticWasteManagement.Scripts
         string Name { get; }
         Func<string> GetHash { get; set; }
         IScriptType Type { get; }
-        Task ApplyAsync(ITransaction transaction, Dictionary<string, string> scriptVariables);
+        Task ApplyAsync(ITransaction transaction, IScriptContext context);
     }
 }

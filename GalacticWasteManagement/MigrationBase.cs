@@ -32,7 +32,7 @@ namespace GalacticWasteManagement
         /// store the result in a local variable, ok?
         /// </summary>
         public ITransaction Transaction => _connectionManager.Transaction;
-        public Dictionary<string, string> ScriptVariables { get; set; }
+        public IScriptContext ScriptContext { get; set; }
         public GalacticWasteManager GalacticWasteManager { get; set; }
         public string Name { get; set; }
 
@@ -72,7 +72,7 @@ namespace GalacticWasteManagement
                 var sameTransaction = Transaction;
                 using (var step = Output.MiniProfiler.Step(script.Name))
                 {
-                    await script.ApplyAsync(sameTransaction, ScriptVariables);
+                    await script.ApplyAsync(sameTransaction, ScriptContext);
                 }
 
                 if (script.Type.IsJournaled)

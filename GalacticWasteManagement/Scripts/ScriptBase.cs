@@ -16,14 +16,24 @@ namespace GalacticWasteManagement.Scripts
             GetHash = () => _cachedHashedContent ?? (_cachedHashedContent = Hashing.CreateHash(Sql));
         }
 
-        public async Task ApplyAsync(ITransaction transaction, Dictionary<string, string> scriptVariables)
+        public async Task ApplyAsync(ITransaction transaction, IScriptContext context)
         {
-            var batches = ScriptUtilities.SplitInBatches(Sql);
+            var batches = context.Parser.SplitInBatches(Sql);
 
             foreach (var batch in batches)
             {
-                await transaction.ExecuteScalarAsync(ScriptUtilities.ReplaceTokens(batch, scriptVariables));
+                await transaction.ExecuteScalarAsync(ReplaceTokens(batch, context.Variables));
             }
+        }
+
+        protected virtual string ReplaceTokens(string @this, IDictionary<string, string> variables)
+        {
+            foreach (var variable in variables)
+            {
+                @this = @this.Replace($"${variable.Key}$", variable.Value);
+            }
+
+            return @this;
         }
 
         public abstract string Sql { get; }

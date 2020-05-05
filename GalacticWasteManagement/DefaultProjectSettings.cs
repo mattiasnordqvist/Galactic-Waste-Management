@@ -9,7 +9,8 @@ namespace GalacticWasteManagement
     public class DefaultProjectSettings<T> : ProjectSettings
     {
         public DefaultProjectSettings() : base(
-            new DefaultMigrationVersioning(),
+            new DefaultMigrationVersioning(), 
+            new SqlServer.MsSql120ScriptParser(),
             new List<IScriptProvider>
             {
                 new BuiltInScriptsScriptProvider(),

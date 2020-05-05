@@ -4,6 +4,6 @@ namespace GalacticWasteManagement.Scripts
 {
     public interface IScriptParser
     {
-        List<string> SplitInBatches(string script);
+        IList<string> SplitInBatches(string script);
     }
 }

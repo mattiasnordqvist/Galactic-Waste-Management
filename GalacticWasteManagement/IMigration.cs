@@ -1,5 +1,5 @@
-﻿using SuperNotUnderstandableInputHandling;
-using System.Collections.Generic;
+﻿using GalacticWasteManagement.Scripts;
+using SuperNotUnderstandableInputHandling;
 using System.Threading.Tasks;
 
 namespace GalacticWasteManagement
@@ -9,7 +9,7 @@ namespace GalacticWasteManagement
         GalacticWasteManager GalacticWasteManager { set; }
         string Name { get; set; }
         string DatabaseName { get; set; }
-        Dictionary<string, string> ScriptVariables { get; set; }
+        IScriptContext ScriptContext { get; set; }
         Task ManageGalacticWaste();
         IParameters Parameters { get; }
     }
