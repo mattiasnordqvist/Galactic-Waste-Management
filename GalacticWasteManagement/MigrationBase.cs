@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -207,7 +207,7 @@ SELECT NULL
                 { 
                     await ManageWaste();
                 }
-                catch(SqlException)
+                catch(Exception)
                 {
                     _connectionManager.Rollback();
                     throw;
