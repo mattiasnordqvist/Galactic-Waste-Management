@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using GalacticWasteManagement.Logging;
@@ -202,7 +203,15 @@ SELECT NULL
             using (var connectionManager = ManageConnection())
             {
                 _connectionManager = connectionManager;
-                await ManageWaste();
+                try 
+                { 
+                    await ManageWaste();
+                }
+                catch(Exception)
+                {
+                    _connectionManager.Rollback();
+                    throw;
+                }
             }
         }
 

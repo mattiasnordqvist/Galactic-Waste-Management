@@ -52,6 +52,13 @@ namespace GalacticWasteManagement
             }
         }
 
+        public void Rollback()
+        {
+            _uow?.Rollback();
+            _uow?.Dispose();
+            _uow = null;
+        }
+
         public void Dispose()
         {
             try
