@@ -18,8 +18,8 @@ namespace GalacticWasteManagement
         /// criterias for cleaning database (any):
         /// * Schema-version-table does exist &&
         /// * (Clean-parameter was set ||
-        /// * Changed or Removed Seed-scripts ||
-        /// * Changed or Removed vNext-scripts ||
+        /// * Changed or Removed or New Seed-scripts ||
+        /// * Changed or Removed or New vNext-scripts ||
         /// * Removed RunIfChanged-scripts)
         /// criterias for initalizing database (any)
         /// * Schema-version-table does not exist
@@ -101,8 +101,8 @@ namespace GalacticWasteManagement
                 var comparisonRunIfChanged = await Compare("vNext", ScriptType.RunIfChanged);
 
                 return
-                comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() || comparisonVNext.Added.Any() ||
-                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any() || comparisonVNext.Added.Any() ||
+                comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() || comparisonVNext.New.Any() ||
+                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any() || comparisonVNext.New.Any() ||
                 comparisonRunIfChanged.Removed.Any();
             }
 

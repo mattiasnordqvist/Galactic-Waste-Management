@@ -60,7 +60,7 @@ namespace GalacticWasteManagement
             {
                 Logger.Log("New migration scripts were found and will be run.", "info");
                 await RunScripts(newerComparison.New);
-                lastJournalEntry = GetLastSchemaVersionJournalEntry()
+                lastJournalEntry = await GetLastSchemaVersionJournalEntry();
             }
 
            
