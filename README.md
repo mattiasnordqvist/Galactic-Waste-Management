@@ -358,23 +358,22 @@ Script of ScriptType *Initialize* are run if the database was just created or if
 
 #### vNext
 Next, all scripts with ScriptType *vNext* will be run. At this point, *vNext* should contain all scripts for the first version. In GreenField, these scripts are typically CREATE TABLE-scripts for schema creation, and INSERT-scripts for content creation.
-Everytime the GreenField migration runs, it will look for new, changed or removed scripts in this folder. If there are any scripts removed or changed, the database will be cleaned (more on that later) before all vNext scripts are run.
-If there is only new scripts found, they will be run without cleaning the database first. If all scripts are unchanged, nothing will be done here.
+Everytime the GreenField migration runs, it will look for new, changed or removed scripts in this folder. If there are any scripts removed or changed or added since last time, the database will be cleaned (more on that later) before all vNext scripts are run.
+If all scripts vNext scripts are unchanged, nothing will be done here.
 
 #### RunIfChanged
-These scripts are run if they are new or changed. This folder typically contain stored procedures, views, triggers functions and the like. These scripts must be idempotent.
-During GreenField development you can add and remove scripts from here as you like, since it easy to force a new clean migration.
+These scripts are run if they are new or changed. This folder typically contain stored procedures, views, triggers, functions and the like. These scripts must be idempotent, that is, each create xyz should be preceeded with an "if exists drop".
+During GreenField development you can add and remove scripts from here as you like. Any removed scripts will trigger a cleaning of schema and complete migration rerun.
 
 #### Seed
-*Seed* type scripts are only run in GreenField. They typically contain data that aids the developers by creating some fake data.
-Changes or removal of any Seed scripts will trigger a clean migration, to ensure the data matches the schema. 
-If the folder only contain Added files though, they will be run without cleaning and migrating the schema again.
+*Seed* type scripts are only run in GreenField. They typically contain data that aid the developers by creating some fake data.
+Changed, removed or added Seed scripts will trigger a clean migration, to ensure the data matches the schema. 
 These are the last scripts executed before the migration is complete.
 
 #### Drop
-In any instance where the schema has to be cleaned (changed or removed vNext or Seed scripts), all scripts of type *Drop* will be run.
+In any instance where the schema has to be cleaned, all scripts of type *Drop* will be run.
 
-All scripts in GreenField development will have version 'vNext' or 'local' (only seed scripts) in the SchemaVersionJournal table.
+All scripts in GreenField development will have version 'vNext' or 'local' in the SchemaVersionJournal table.
 Create/Drop/Initialize-scripts are not journaled.
 
 ### LiveField
@@ -392,7 +391,7 @@ RunIfChanged-scripts will be run as in GreenField. However, a new situation in L
 
 When you continue development after your first release, you want to run in BrownField mode. Brownfield accepts a Source-parameter, which should point to a .bak-file from which you can restore your database. This backup should've been taken from the live database at some point.
 BrownField works pretty much like GreenField, but if Source is set, it will *Restore* database instead of *Clean* it. After restore or clean, all Migration-, vNext-, RunfIfchanged- and Seed-scripts will be evaluated for execution.
-New migration scripts should again go in the *vNext* folder. Scripts in the *Migration*-folder are considered *cemented* and you are not allowed to change them. Changing them will result in an error. THESE 
+New migration scripts should again go in the *vNext* folder. Scripts in the *Migration*-folder are considered *cemented* and you are not allowed to change them. Changing them will result in an error. 
 
 ## Contributors ✨
 

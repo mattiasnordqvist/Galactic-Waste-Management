@@ -59,7 +59,8 @@ namespace GalacticWasteManagement
             if (newerComparison.New.Any())
             {
                 Logger.Log("New migration scripts were found and will be run.", "info");
-                lastJournalEntry = await RunScripts(newerComparison.New);
+                await RunScripts(newerComparison.New);
+                lastJournalEntry = GetLastSchemaVersionJournalEntry()
             }
 
            

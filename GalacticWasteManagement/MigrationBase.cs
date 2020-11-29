@@ -55,9 +55,8 @@ namespace GalacticWasteManagement
                 }
             }
         }
-        protected async Task<SchemaVersionJournalEntry> RunScripts(IEnumerable<IScript> scripts, string version = null)
+        protected async Task RunScripts(IEnumerable<IScript> scripts, string version = null)
         {
-            var lastVersion = await GetLastSchemaVersionJournalEntry();
             var orderedScripts = scripts.OrderBy(x => x.Type.IsJournaled);
             if (version == null)
             {
@@ -91,12 +90,8 @@ namespace GalacticWasteManagement
                     {
                         await sameTransaction.ExecuteAsync($"INSERT INTO SchemaVersionJournal (Version, [Type], Name, Applied, Hash) values (@Version, @Type, @Name, @Applied, @Hash)", nextSchemaJournalVersion);
                     }
-
-                    lastVersion = nextSchemaJournalVersion;
                 }
             }
-            return lastVersion;
-
         }
 
         private class DbFilesInfo

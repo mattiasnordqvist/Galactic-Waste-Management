@@ -101,8 +101,8 @@ namespace GalacticWasteManagement
                 var comparisonRunIfChanged = await Compare("vNext", ScriptType.RunIfChanged);
 
                 return
-                comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() ||
-                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any() ||
+                comparisonVNext.Removed.Any() || comparisonVNext.Changed.Any() || comparisonVNext.Added.Any() ||
+                comparisonSeed.Removed.Any() || comparisonSeed.Changed.Any() || comparisonVNext.Added.Any() ||
                 comparisonRunIfChanged.Removed.Any();
             }
 
