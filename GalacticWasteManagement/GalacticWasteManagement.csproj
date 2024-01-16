@@ -19,7 +19,7 @@
     <PackageReference Include="MiniProfiler.Shared" Version="4.0.180" />
     <PackageReference Include="Pastel" Version="1.3.1" />
     <PackageReference Include="SuperNotUnderstandableInputHandling" Version="1.1.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 
 </Project>
